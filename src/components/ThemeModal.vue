@@ -1,0 +1,284 @@
+<script setup lang="ts">
+import { ref, reactive } from 'vue'
+import { motion, AnimatePresence } from 'motion-v'
+import * as XLSX from 'xlsx'
+import { supabase } from '@/lib/supabaseClient'
+
+const props = defineProps<{
+  isOpen: boolean
+}>()
+
+const emit = defineEmits(['close', 'saved'])
+
+const themeName = ref('')
+const words = ref<any[]>([])
+const isSaving = ref(false)
+const dragActive = ref(false)
+
+const newWord = reactive({
+  word: '',
+  pos: '',
+  meaning: '',
+  example: ''
+})
+
+function addManualWord() {
+  if (!newWord.word || !newWord.meaning) return
+  words.value.push({ ...newWord })
+  newWord.word = ''
+  newWord.pos = ''
+  newWord.meaning = ''
+  newWord.example = ''
+}
+
+function removeWord(index: number) {
+  words.value.splice(index, 1)
+}
+
+async function handleFileUpload(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  parseFile(file)
+}
+
+function handleDrop(event: DragEvent) {
+  event.preventDefault()
+  dragActive.value = false
+  const file = event.dataTransfer?.files[0]
+  if (file) parseFile(file)
+}
+
+function parseFile(file: File) {
+  const isCSV = file.name.toLowerCase().endsWith('.csv')
+  const reader = new FileReader()
+  
+  reader.onload = (e) => {
+    const arrayBuffer = e.target?.result as ArrayBuffer
+    let workbook: XLSX.WorkBook
+
+    if (isCSV) {
+      // For CSV, decode as UTF-8 string to ensure multi-byte characters (Thai) are preserved
+      const decoder = new TextDecoder('utf-8')
+      const content = decoder.decode(arrayBuffer)
+      workbook = XLSX.read(content, { type: 'string' })
+    } else {
+      const data = new Uint8Array(arrayBuffer)
+      workbook = XLSX.read(data, { type: 'array' })
+    }
+    
+    const sheetName = workbook.SheetNames[0]
+    if (!sheetName) return
+    const worksheet = workbook.Sheets[sheetName]
+    if (!worksheet) return
+    const json = XLSX.utils.sheet_to_json(worksheet)
+    
+    // Map common column names
+    const importedWords = json.map((row: any) => ({
+      word: row.word || row.Word || row.vocab || '',
+      pos: row.pos || row.POS || row.type || '',
+      meaning: row.meaning || row.Meaning || row.definition || row.translation || '',
+      example: row.example || row.Example || row.sentence || ''
+    })).filter(w => w.word && w.meaning)
+
+    words.value = [...words.value, ...importedWords]
+  }
+  reader.readAsArrayBuffer(file)
+}
+
+async function saveTheme() {
+  if (!themeName.value.trim() || words.value.length === 0) return
+  
+  isSaving.value = true
+  
+  // Generate a random 9-digit ID for the primary key
+  const generatedId = Math.floor(100000000 + Math.random() * 900000000)
+  
+  const { data, error } = await supabase
+    .from('flashcards')
+    .insert([{ 
+      id: generatedId,
+      theme_name: themeName.value.trim(),
+      data: { words: words.value }
+    }])
+    .select()
+
+  if (!error && data) {
+    emit('saved', data[0])
+    resetAndClose()
+  }
+  isSaving.value = false
+}
+
+function resetAndClose() {
+  themeName.value = ''
+  words.value = []
+  emit('close')
+}
+</script>
+
+<template>
+  <AnimatePresence>
+    <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6">
+      <!-- Backdrop -->
+      <motion.div 
+        initial="{ opacity: 0 }"
+        animate="{ opacity: 1 }"
+        exit="{ opacity: 0 }"
+        @click="resetAndClose"
+        class="absolute inset-0 bg-earth-900/40 backdrop-blur-sm"
+      ></motion.div>
+
+      <!-- Modal Content -->
+      <motion.div
+        initial="{ opacity: 0, scale: 0.9, y: 20 }"
+        animate="{ opacity: 1, scale: 1, y: 0 }"
+        exit="{ opacity: 0, scale: 0.9, y: 20 }"
+        class="relative bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col"
+      >
+        <!-- Header -->
+        <div class="px-8 py-6 border-b border-earth-100 flex justify-between items-center bg-earth-50/50">
+          <div>
+            <h2 class="text-2xl font-serif text-earth-900 font-bold">New Collection</h2>
+            <p class="text-earth-500 text-xs font-sans font-bold uppercase tracking-widest mt-1">Archive Entry Form</p>
+          </div>
+          <button @click="resetAndClose" class="text-earth-300 hover:text-earth-600 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
+          <!-- Theme Name Input -->
+          <div class="space-y-3">
+            <label class="text-earth-800 font-serif italic text-lg">Collection Title</label>
+            <input 
+              v-model="themeName"
+              type="text" 
+              placeholder="e.g., Medical Terminology Vol. 1"
+              class="w-full bg-earth-50 border border-earth-100 rounded-2xl px-6 py-4 text-earth-900 text-xl font-serif placeholder:text-earth-200 focus:outline-none focus:ring-2 focus:ring-earth-200 transition-all"
+            />
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <!-- Manual Entry -->
+            <div class="space-y-6">
+              <div class="flex items-center justify-between">
+                <h3 class="text-earth-800 font-serif italic text-lg">Single Entry</h3>
+                <span class="text-[10px] font-bold uppercase tracking-widest text-earth-300">Manual Keying</span>
+              </div>
+              
+              <div class="space-y-4 bg-earth-50/30 p-6 rounded-3xl border border-earth-100">
+                <input v-model="newWord.word" placeholder="Word (e.g., Ephemeral)" class="w-full bg-white border border-earth-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all" />
+                <input v-model="newWord.pos" placeholder="Part of Speech (e.g., Adjective)" class="w-full bg-white border border-earth-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all" />
+                <textarea v-model="newWord.meaning" placeholder="Meaning / Translation" class="w-full bg-white border border-earth-100 rounded-xl px-4 py-3 text-sm min-h-[80px] focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all"></textarea>
+                <textarea v-model="newWord.example" placeholder="Usage Example sentence" class="w-full bg-white border border-earth-100 rounded-xl px-4 py-3 text-sm min-h-[80px] focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all"></textarea>
+                
+                <motion.button
+                  :whileHover="{ scale: 1.02 }"
+                  :whileTap="{ scale: 0.98 }"
+                  @click="addManualWord"
+                  class="w-full bg-earth-800 text-white font-bold py-3 rounded-xl hover:bg-earth-900 transition-colors shadow-lg shadow-earth-900/10"
+                >
+                  Append to List
+                </motion.button>
+              </div>
+            </div>
+
+            <!-- Import Section -->
+            <div class="space-y-6">
+              <div class="flex items-center justify-between">
+                <h3 class="text-earth-800 font-serif italic text-lg">Batch Import</h3>
+                <span class="text-[10px] font-bold uppercase tracking-widest text-earth-300">Excel / CSV Support</span>
+              </div>
+
+              <div 
+                @dragover.prevent="dragActive = true"
+                @dragleave.prevent="dragActive = false"
+                @drop="handleDrop"
+                :class="dragActive ? 'border-sage-400 bg-sage-50/30' : 'border-earth-100 bg-earth-50/30'"
+                class="relative border-2 border-dashed rounded-3xl p-10 flex flex-col items-center justify-center text-center transition-all min-h-[300px]"
+              >
+                <div class="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-earth-300 mb-6">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z" /></svg>
+                </div>
+                <p class="text-earth-800 font-serif italic text-lg mb-2">Drag & Drop Spreadsheet</p>
+                <p class="text-earth-400 text-xs mb-6 px-6">Required columns: word, meaning. Optional: pos, example.</p>
+                
+                <label class="cursor-pointer bg-white border border-earth-100 text-earth-700 font-bold px-6 py-3 rounded-xl hover:shadow-md transition-all">
+                  Browse Files
+                  <input type="file" class="hidden" @change="handleFileUpload" accept=".xlsx, .xls, .csv" />
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div v-if="words.length > 0" class="space-y-6 pt-6 border-t border-earth-100">
+            <div class="flex items-baseline justify-between">
+              <h3 class="text-earth-800 font-serif italic text-lg">Registry Preview</h3>
+              <span class="text-earth-400 font-sans text-xs font-bold">{{ words.length }} Cards Staged</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <AnimatePresence>
+                <motion.div 
+                  v-for="(word, index) in words" 
+                  :key="index"
+                  initial="{ opacity: 0, x: -10 }"
+                  animate="{ opacity: 1, x: 0 }"
+                  exit="{ opacity: 0, scale: 0.95 }"
+                  class="group flex items-start justify-between bg-earth-50/50 border border-earth-100 p-4 rounded-2xl hover:bg-white hover:shadow-md transition-all"
+                >
+                  <div>
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="font-serif font-bold text-earth-900">{{ word.word }}</span>
+                      <span v-if="word.pos" class="text-[9px] uppercase tracking-widest text-earth-400 font-bold bg-earth-100 px-1.5 py-0.5 rounded">{{ word.pos }}</span>
+                    </div>
+                    <p class="text-earth-500 text-xs italic">{{ word.meaning }}</p>
+                  </div>
+                  <button @click="removeWord(index)" class="opacity-0 group-hover:opacity-100 p-2 text-clay-400 hover:text-clay-600 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" /></svg>
+                  </button>
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-8 py-6 border-t border-earth-100 bg-white flex justify-end gap-4">
+          <button 
+            @click="resetAndClose"
+            class="px-8 py-3 text-earth-500 font-bold text-sm tracking-wide hover:text-earth-800 transition-colors"
+          >
+            Cancel
+          </button>
+          <motion.button
+            :whileHover="{ scale: 1.02 }"
+            :whileTap="{ scale: 0.98 }"
+            @click="saveTheme"
+            :disabled="!themeName || words.length === 0 || isSaving"
+            class="bg-earth-800 text-white font-bold px-10 py-3 rounded-2xl hover:bg-earth-900 transition-colors disabled:opacity-30 disabled:cursor-not-allowed shadow-xl shadow-earth-900/10"
+          >
+            {{ isSaving ? 'Archiving Collection...' : 'Create Collection' }}
+          </motion.button>
+        </div>
+      </motion.div>
+    </div>
+  </AnimatePresence>
+</template>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
+}
+</style>

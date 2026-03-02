@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,800;1,400;1,600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-earth-50: #fdfcfb;
+  --color-earth-100: #faf7f2;
+  --color-earth-200: #f0e6d8;
+  --color-earth-300: #e5d4bd;
+  --color-earth-400: #d9c2a2;
+  --color-earth-50: #fdfcfb;
+  --color-earth-500: #cdb087;
+  --color-earth-600: #ba9a6d;
+  --color-earth-700: #a3845b;
+  --color-earth-800: #8c6f4a;
+  --color-earth-900: #755a3a;
+  --color-earth-950: #5e452a;
+
+  --color-clay-50: #f9f6f4;
+  --color-clay-100: #f4ece9;
+  --color-clay-200: #e9d9d4;
+  --color-clay-300: #dec6bf;
+  --color-clay-400: #d3b3aa;
+  --color-clay-500: #c8a095;
+  --color-clay-600: #a08077;
+  --color-clay-700: #786059;
+  --color-clay-800: #50403b;
+  --color-clay-900: #28201d;
+
+  --color-sage-50: #f6f7f6;
+  --color-sage-100: #edf0ed;
+  --color-sage-200: #dbe1db;
+  --color-sage-300: #c9d2c9;
+  --color-sage-400: #b7c3b7;
+  --color-sage-500: #a5b4a5;
+  --color-sage-600: #849084;
+  --color-sage-700: #636c63;
+  --color-sage-800: #424842;
+  --color-sage-900: #212421;
+
+  --font-serif: "Playfair Display", serif;
+  --font-sans: Inter, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-earth-50 text-earth-900 font-sans antialiased;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+  }
+}
