@@ -38,10 +38,59 @@ function nextWord() {
 
 function prevWord() {
   if (currentIndex.value > 0) {
-    isFlipped.value = false
     setTimeout(() => {
       currentIndex.value--
+      isFlipped.value = false
     }, 150)
+  }
+}
+
+// --- Touch / Swipe ---
+const SWIPE_THRESHOLD = 40 // px
+const touchStartX = ref(0)
+const touchStartY = ref(0)
+const dragX = ref(0)
+const isSwiping = ref(false)
+
+function onTouchStart(e: TouchEvent) {
+  const touch = e.touches[0]
+  if (!touch) return
+  touchStartX.value = touch.clientX
+  touchStartY.value = touch.clientY
+  dragX.value = 0
+  isSwiping.value = false
+}
+
+function onTouchMove(e: TouchEvent) {
+  const touch = e.touches[0]
+  if (!touch) return
+  const dx = touch.clientX - touchStartX.value
+  const dy = touch.clientY - touchStartY.value
+  // Only hijack scroll if clearly horizontal
+  if (Math.abs(dx) > Math.abs(dy)) {
+    e.preventDefault()
+    dragX.value = dx
+    isSwiping.value = true
+  }
+}
+
+function onTouchEnd(e: TouchEvent) {
+  const touch = e.changedTouches[0]
+  if (!touch) return
+  const dx = touch.clientX - touchStartX.value
+  dragX.value = 0
+  if (Math.abs(dx) >= SWIPE_THRESHOLD) {
+    isSwiping.value = true
+    if (dx < 0) nextWord()       // swipe left  → next
+    else prevWord()               // swipe right → prev
+  } else {
+    isSwiping.value = false
+  }
+}
+
+function handleCardClick() {
+  if (!isSwiping.value) {
+    isFlipped.value = !isFlipped.value
   }
 }
 
@@ -81,19 +130,22 @@ onMounted(() => {
         <motion.div 
           :key="currentIndex"
           :initial="{ opacity: 0, scale: 0.95, x: 20 }"
-          :animate="{ opacity: 1, scale: 1, x: 0 }"
-          :exit="{ opacity: 0, scale: 0.95, x: -20 }"
+          :animate="{ opacity: 1, scale: 1, x: dragX * 0.15 }"
+          :exit="{ opacity: 0, scale: 0.95, x: dragX < 0 ? -60 : 60 }"
           :transition="{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }"
-          class="perspective-1000 aspect-[3/4] w-full"
+          class="perspective-1000 aspect-[3/4] w-full touch-pan-y select-none"
+          @touchstart.passive="onTouchStart"
+          @touchmove="onTouchMove"
+          @touchend="onTouchEnd"
         >
           <motion.div
             class="relative w-full h-full cursor-pointer preserve-3d"
             :animate="{ rotateY: isFlipped ? 180 : 0 }"
             :transition="{ duration: 0.6, ease: [0.23, 1, 0.32, 1] }"
-            @click="isFlipped = !isFlipped"
+            @click="handleCardClick"
           >
             <!-- Front of Card -->
-            <div class="absolute inset-0 backface-hidden bg-white border border-earth-100 rounded-3xl p-12 flex flex-col items-center justify-center text-center shadow-[0_20px_50px_rgba(140,111,74,0.1)]">
+            <div class="absolute inset-0 backface-hidden bg-white border border-earth-200 rounded-3xl p-12 flex flex-col items-center justify-center text-center shadow-[0_20px_50px_rgba(140,111,74,0.1)]">
               <!-- Top Accent -->
               <div class="absolute top-12 left-1/2 -translate-x-1/2 w-12 h-1 bg-sage-300 rounded-full"></div>
               
