@@ -10,9 +10,24 @@ const theme = ref<any>(null)
 const currentIndex = ref(0)
 const isFlipped = ref(false)
 const loading = ref(true)
+const direction = ref(1) // 1 for next, -1 for prev
 
 const words = computed(() => theme.value?.data?.words || [])
 const currentWord = computed(() => words.value[currentIndex.value] || null)
+
+// Sliding window of 15 dots centered on currentIndex
+const DOTS_VISIBLE = 15
+const visibleDots = computed(() => {
+  const total = words.value.length
+  if (total === 0) return []
+  const half = Math.floor(DOTS_VISIBLE / 2)
+  let start = currentIndex.value - half
+  let end = start + DOTS_VISIBLE
+  // Clamp to bounds
+  if (start < 0) { start = 0; end = Math.min(DOTS_VISIBLE, total) }
+  if (end > total) { end = total; start = Math.max(0, end - DOTS_VISIBLE) }
+  return Array.from({ length: end - start }, (_, i) => start + i)
+})
 
 async function getCollection() {
   const { data, error } = await supabase
@@ -29,19 +44,21 @@ async function getCollection() {
 
 function nextWord() {
   if (currentIndex.value < words.value.length - 1) {
-      setTimeout(() => {
-          currentIndex.value++
-          isFlipped.value = false
-    }, 150)
+    direction.value = 1
+    setTimeout(() => {
+      currentIndex.value++
+      isFlipped.value = false
+    }, 100)
   }
 }
 
 function prevWord() {
   if (currentIndex.value > 0) {
+    direction.value = -1
     setTimeout(() => {
       currentIndex.value--
       isFlipped.value = false
-    }, 150)
+    }, 100)
   }
 }
 
@@ -81,8 +98,13 @@ function onTouchEnd(e: TouchEvent) {
   dragX.value = 0
   if (Math.abs(dx) >= SWIPE_THRESHOLD) {
     isSwiping.value = true
-    if (dx < 0) nextWord()       // swipe left  → next
-    else prevWord()               // swipe right → prev
+    if (dx < 0) {
+      direction.value = 1
+      nextWord()
+    } else {
+      direction.value = -1
+      prevWord()
+    }
   } else {
     isSwiping.value = false
   }
@@ -94,13 +116,43 @@ function handleCardClick() {
   }
 }
 
+// --- Text-to-Speech ---
+const isSpeaking = ref(false)
+
+function speak(text: string, lang: string, e?: MouseEvent) {
+  e?.stopPropagation()
+  if (!text || !window.speechSynthesis) return
+
+  window.speechSynthesis.cancel()
+  isSpeaking.value = false
+
+  const utter = new SpeechSynthesisUtterance(text)
+  utter.lang = lang
+  utter.rate = 0.9
+
+  // Prefer a native voice for the language
+  const voices = window.speechSynthesis.getVoices()
+  const langPrefix = lang.substring(0, 2)
+  const match = voices.find((v) => v.lang.startsWith(langPrefix) && v.localService)
+    ?? voices.find((v) => v.lang.startsWith(langPrefix))
+  if (match) utter.voice = match
+
+  utter.onstart = () => { isSpeaking.value = true }
+  utter.onend = () => { isSpeaking.value = false }
+  utter.onerror = () => { isSpeaking.value = false }
+
+  window.speechSynthesis.speak(utter)
+}
+
 onMounted(() => {
   getCollection()
+  // Pre-load voices (some browsers need this)
+  window.speechSynthesis.getVoices()
 })
 </script>
 
 <template>
-  <div class="min-h-screen bg-earth-50 flex flex-col items-center justify-center p-6 pb-24 overflow-hidden">
+  <div class="min-h-screen bg-earth-100 flex flex-col items-center justify-center p-6 pb-24 overflow-hidden">
     <!-- Navigation Header -->
     <div class="fixed top-0 left-0 right-0 p-8 flex justify-between items-center z-20 pointer-events-none">
       <motion.button
@@ -110,7 +162,7 @@ onMounted(() => {
         class="flex items-center gap-2 text-earth-500 font-bold text-sm tracking-wide hover:text-earth-800 transition-colors pointer-events-auto"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-        <span>Back to Collections</span>
+        <span>Back</span>
       </motion.button>
 
       <div v-if="theme" class="text-right pointer-events-auto">
@@ -129,10 +181,10 @@ onMounted(() => {
       <AnimatePresence mode="wait">
         <motion.div 
           :key="currentIndex"
-          :initial="{ opacity: 0, scale: 0.95, x: 20 }"
-          :animate="{ opacity: 1, scale: 1, x: dragX * 0.15 }"
-          :exit="{ opacity: 0, scale: 0.95, x: dragX < 0 ? -60 : 60 }"
-          :transition="{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }"
+          :initial="{ opacity: 0, x: direction === 1 ? 50 : -50 }"
+          :animate="{ opacity: 1, x: 0 }"
+          :exit="{ opacity: 0, x: direction === 1 ? -50 : 50 }"
+          :transition="{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }"
           class="perspective-1000 aspect-[3/4] w-full touch-pan-y select-none"
           @touchstart.passive="onTouchStart"
           @touchmove="onTouchMove"
@@ -150,18 +202,30 @@ onMounted(() => {
               <div class="absolute top-12 left-1/2 -translate-x-1/2 w-12 h-1 bg-sage-300 rounded-full"></div>
               
               <div class="flex-1 flex flex-col justify-center w-full">
-                <h2 class="text-4xl font-serif text-earth-900 font-bold leading-tight mb-8">{{ currentWord.word }}</h2>
-                
+                <!-- English word + speaker -->
+                <div class="flex items-center justify-center gap-3 mb-8">
+                  <h2 class="text-4xl font-serif text-earth-900 font-bold leading-tight">{{ currentWord.word }}</h2>
+                  <button
+                    @click="speak(currentWord.word, 'en-US', $event)"
+                    class="relative flex-shrink-0 w-9 h-9 rounded-full bg-earth-100 hover:bg-earth-200 flex items-center justify-center text-earth-500 hover:text-earth-800 transition-all"
+                    title="Read in English"
+                  >
+                    <span v-if="isSpeaking" class="absolute inset-0 rounded-full bg-earth-300/40 animate-ping"></span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                  </button>
+                </div>
+
                 <div v-if="currentWord.pos">
                   <p class="text-earth-500 text-[9px] font-bold uppercase tracking-widest mb-2">Part of Speech</p>
-                <div v-if="currentWord.pos" class="inline-block mx-auto px-4 py-1.5 bg-earth-800 border border-earth-700 rounded-full text-[10px] text-earth-300 font-bold uppercase tracking-widest">
-                  {{ currentWord.pos }}
-                </div>
+                  <div class="inline-block mx-auto px-4 py-1.5 bg-earth-800 border border-earth-700 rounded-full text-[10px] text-earth-300 font-bold uppercase tracking-widest">
+                    {{ currentWord.pos }}
+                  </div>
                 </div>
               </div>
 
               <!-- Footer Insight -->
-              <p class="absolute bottom-12 left-1/2 -translate-x-1/2 w-full text-earth-300 text-[10px] font-bold uppercase tracking-[0.2em]">Click to reveal insights</p>
+              <p class="absolute bottom-14 left-1/2 -translate-x-1/2 w-full text-earth-300 text-[10px] font-bold uppercase tracking-[0.2em]">Tap to reveal · Swipe to navigate</p>
+              <p class="absolute bottom-10 left-1/2 -translate-x-1/2 w-full text-earth-300 text-[9px] font-bold uppercase tracking-[0.2em]">Card {{ currentIndex + 1 }} of {{ words.length }}</p>
             </div>
 
             <!-- Back of Card -->
@@ -172,9 +236,21 @@ onMounted(() => {
               <div class="flex-1 flex flex-col justify-center w-full space-y-8">
                 <div>
                   <p class="text-earth-400 text-[10px] font-bold uppercase tracking-widest mb-2">Meaning</p>
-                  <p class="text-earth-50 font-serif italic text-2xl leading-relaxed">
-                    {{ currentWord.meaning || 'Pending Explanation...' }}
-                  </p>
+                  <!-- Thai meaning + speaker -->
+                  <div class="flex items-center justify-center gap-3">
+                    <p class="text-earth-50 font-serif italic text-2xl leading-relaxed">
+                      {{ currentWord.meaning || 'Pending Explanation...' }}
+                    </p>
+                    <button
+                      v-if="currentWord.meaning"
+                      @click="speak(currentWord.meaning, 'th-TH', $event)"
+                      class="relative flex-shrink-0 w-9 h-9 rounded-full bg-earth-700 hover:bg-earth-600 flex items-center justify-center text-earth-300 hover:text-earth-50 transition-all"
+                      title="อ่านภาษาไทย"
+                    >
+                      <span v-if="isSpeaking" class="absolute inset-0 rounded-full bg-earth-400/30 animate-ping"></span>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                    </button>
+                  </div>
                 </div>
 
                 <div v-if="currentWord.example">
@@ -205,10 +281,10 @@ onMounted(() => {
 
         <div class="flex gap-1">
           <div 
-            v-for="(_, i) in words.slice(0, 15)" 
-            :key="i"
-            class="w-1.5 h-1.5 rounded-full transition-all duration-300"
-            :class="i === currentIndex ? 'bg-earth-800 w-4' : 'bg-earth-200'"
+            v-for="idx in visibleDots" 
+            :key="idx"
+            class="h-1.5 rounded-full transition-all duration-300"
+            :class="idx === currentIndex ? 'bg-earth-800 w-4' : 'bg-earth-200 w-1.5'"
           ></div>
         </div>
 

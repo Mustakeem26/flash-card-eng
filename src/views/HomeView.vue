@@ -33,7 +33,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-earth-50 selection:bg-earth-200 pb-20">
+  <div class="min-h-screen bg-earth-100 selection:bg-earth-200 pb-20">
     <main class="max-w-5xl mx-auto px-6 pt-12">
       <!-- Call to Action Section -->
       <section class="mb-16">

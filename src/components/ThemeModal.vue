@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { motion, AnimatePresence } from 'motion-v'
 import * as XLSX from 'xlsx'
 import { supabase } from '@/lib/supabaseClient'
@@ -22,8 +22,15 @@ const newWord = reactive({
   example: ''
 })
 
+const canAppend = computed(() =>
+  newWord.word.trim() !== '' &&
+  newWord.pos.trim() !== '' &&
+  newWord.meaning.trim() !== '' &&
+  newWord.example.trim() !== ''
+)
+
 function addManualWord() {
-  if (!newWord.word || !newWord.meaning) return
+  if (!canAppend.value) return
   words.value.push({ ...newWord })
   newWord.word = ''
   newWord.pos = ''
@@ -149,12 +156,12 @@ function resetAndClose() {
         <div class="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
           <!-- Theme Name Input -->
           <div class="space-y-3">
-            <label class="text-earth-800 font-serif italic text-lg">Collection Title</label>
+            <label class="font-serif text-earth-900 font-bold">Collection Title</label>
             <input 
               v-model="themeName"
               type="text" 
-              placeholder="e.g., Medical Terminology Vol. 1"
-              class="w-full bg-earth-50 border border-earth-100 rounded-2xl px-6 py-4 text-earth-900 text-xl font-serif placeholder:text-earth-200 focus:outline-none focus:ring-2 focus:ring-earth-200 transition-all"
+              placeholder="e.g., Medical Terminology"
+              class="w-full bg-earth-50 border border-earth-300 rounded-2xl px-6 py-4 text-earth-900 text-xl font-serif placeholder:text-earth-300 focus:outline-none focus:ring-2 focus:ring-earth-200 transition-all"
             />
           </div>
 
@@ -162,21 +169,23 @@ function resetAndClose() {
             <!-- Manual Entry -->
             <div class="space-y-6">
               <div class="flex items-center justify-between">
-                <h3 class="text-earth-800 font-serif italic text-lg">Single Entry</h3>
+                <h3 class="font-serif text-earth-900 font-bold">Single Entry</h3>
                 <span class="text-[10px] font-bold uppercase tracking-widest text-earth-300">Manual Keying</span>
               </div>
               
-              <div class="space-y-4 bg-earth-50/30 p-6 rounded-3xl border border-earth-100">
-                <input v-model="newWord.word" placeholder="Word (e.g., Ephemeral)" class="w-full bg-white border border-earth-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all" />
-                <input v-model="newWord.pos" placeholder="Part of Speech (e.g., Adjective)" class="w-full bg-white border border-earth-100 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all" />
-                <textarea v-model="newWord.meaning" placeholder="Meaning / Translation" class="w-full bg-white border border-earth-100 rounded-xl px-4 py-3 text-sm min-h-[80px] focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all"></textarea>
-                <textarea v-model="newWord.example" placeholder="Usage Example sentence" class="w-full bg-white border border-earth-100 rounded-xl px-4 py-3 text-sm min-h-[80px] focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all"></textarea>
+              <div class="space-y-4 bg-earth-50/30 p-6 rounded-3xl border border-earth-300">
+                <input v-model="newWord.word" placeholder="Word (e.g., Ephemeral)" class="w-full bg-white border border-earth-300 placeholder:text-earth-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all" />
+                <input v-model="newWord.pos" placeholder="Part of Speech (e.g., Adjective)" class="w-full bg-white border border-earth-300 placeholder:text-earth-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all" />
+                <input v-model="newWord.meaning" placeholder="Meaning / Translation" class="w-full bg-white border border-earth-300 placeholder:text-earth-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all"></input>
+                <textarea v-model="newWord.example" placeholder="Usage Example sentence" class="w-full bg-white border border-earth-300 placeholder:text-earth-300 rounded-xl px-4 py-3 text-sm min-h-[80px] focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all"></textarea>
                 
                 <motion.button
-                  :whileHover="{ scale: 1.02 }"
-                  :whileTap="{ scale: 0.98 }"
+                  :whileHover="canAppend ? { scale: 1.02 } : {}"
+                  :whileTap="canAppend ? { scale: 0.98 } : {}"
                   @click="addManualWord"
-                  class="w-full bg-earth-800 text-white font-bold py-3 rounded-xl hover:bg-earth-900 transition-colors shadow-lg shadow-earth-900/10"
+                  :disabled="!canAppend"
+                  class="w-full bg-earth-800 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-earth-900/10 disabled:opacity-30 disabled:cursor-not-allowed"
+                  :class="canAppend ? 'hover:bg-earth-900' : ''"
                 >
                   Append to List
                 </motion.button>
@@ -186,7 +195,7 @@ function resetAndClose() {
             <!-- Import Section -->
             <div class="space-y-6">
               <div class="flex items-center justify-between">
-                <h3 class="text-earth-800 font-serif italic text-lg">Batch Import</h3>
+                <h3 class="font-serif text-earth-900 font-bold">Batch Import</h3>
                 <span class="text-[10px] font-bold uppercase tracking-widest text-earth-300">Excel / CSV Support</span>
               </div>
 
@@ -194,16 +203,16 @@ function resetAndClose() {
                 @dragover.prevent="dragActive = true"
                 @dragleave.prevent="dragActive = false"
                 @drop="handleDrop"
-                :class="dragActive ? 'border-sage-400 bg-sage-50/30' : 'border-earth-100 bg-earth-50/30'"
+                :class="dragActive ? 'border-sage-400 bg-sage-50/30' : 'border-earth-300 bg-earth-50/30'"
                 class="relative border-2 border-dashed rounded-3xl p-10 flex flex-col items-center justify-center text-center transition-all min-h-[300px]"
               >
                 <div class="w-16 h-16 bg-white rounded-2xl shadow-sm flex items-center justify-center text-earth-300 mb-6">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z" /></svg>
                 </div>
-                <p class="text-earth-800 font-serif italic text-lg mb-2">Drag & Drop Spreadsheet</p>
+                <p class="font-serif text-earth-900 font-bold mb-2">Drag & Drop Spreadsheet</p>
                 <p class="text-earth-400 text-xs mb-6 px-6">Required columns: word, meaning. Optional: pos, example.</p>
                 
-                <label class="cursor-pointer bg-white border border-earth-100 text-earth-700 font-bold px-6 py-3 rounded-xl hover:shadow-md transition-all">
+                <label class="cursor-pointer bg-white border border-earth-300 text-earth-700 font-bold px-6 py-3 rounded-xl hover:shadow-md transition-all">
                   Browse Files
                   <input type="file" class="hidden" @change="handleFileUpload" accept=".xlsx, .xls, .csv" />
                 </label>
@@ -214,7 +223,7 @@ function resetAndClose() {
           <!-- Preview -->
           <div v-if="words.length > 0" class="space-y-6 pt-6 border-t border-earth-100">
             <div class="flex items-baseline justify-between">
-              <h3 class="text-earth-800 font-serif italic text-lg">Registry Preview</h3>
+              <h3 class="font-serif text-earth-900 font-bold">Registry Preview</h3>
               <span class="text-earth-400 font-sans text-xs font-bold">{{ words.length }} Cards Staged</span>
             </div>
 
