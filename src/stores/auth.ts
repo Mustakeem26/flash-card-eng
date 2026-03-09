@@ -60,11 +60,17 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function initialize() {
-    const { data } = await supabase.auth.getSession()
-    user.value = data.session?.user ?? null
+    // getUser is more secure than getSession as it validates with the server
+    const { data: { user: supabaseUser } } = await supabase.auth.getUser()
+    user.value = supabaseUser
     
-    supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth.onAuthStateChange((event, session) => {
       user.value = session?.user ?? null
+      
+      // Proactive redirect on sign out or session loss
+      if (event === 'SIGNED_OUT' || (event === 'TOKEN_REFRESHED' && !session)) {
+        router.push('/')
+      }
     })
     
     initialized.value = true

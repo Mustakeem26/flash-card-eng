@@ -38,9 +38,14 @@ router.beforeEach(async (to, from, next) => {
     await authStore.initialize()
   }
 
-  if (to.meta.requiresAuth && !authStore.user) {
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+  const isAuthenticated = !!authStore.user
+
+  if (requiresAuth && !isAuthenticated) {
+    // Redirect to login if trying to access a protected route without being authenticated
     next('/')
-  } else if (to.path === '/' && authStore.user) {
+  } else if (to.path === '/' && isAuthenticated) {
+    // Redirect to home if already logged in and trying to access the login page
     next('/home') 
   } else {
     next()

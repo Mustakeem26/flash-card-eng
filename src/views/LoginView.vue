@@ -104,7 +104,7 @@ const handleSubmit = async () => {
 
     <!-- Visual footer note -->
     <div class="fixed bottom-6 text-earth-400 text-xs font-serif italic uppercase tracking-widest">
-      © Flashly Box 2026 v.1.0.0
+      © Flashly Box 2026 v.1.0.3
     </div>
   </div>
 </template>
