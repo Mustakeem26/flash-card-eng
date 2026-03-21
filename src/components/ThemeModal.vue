@@ -3,6 +3,9 @@ import { ref, reactive, computed } from 'vue'
 import { motion, AnimatePresence } from 'motion-v'
 import * as XLSX from 'xlsx'
 import { supabase } from '@/lib/supabaseClient'
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
 
 const props = defineProps<{
   isOpen: boolean
@@ -11,31 +14,23 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'saved'])
 
 const themeName = ref('')
-const words = ref<any[]>([])
+const words = ref<string[]>([])
 const isSaving = ref(false)
 const dragActive = ref(false)
 
 const newWord = reactive({
-  word: '',
-  pos: '',
-  meaning: '',
-  example: ''
+  word: ''
 })
 
 const canAppend = computed(() =>
-  newWord.word.trim() !== '' &&
-  newWord.pos.trim() !== '' &&
-  newWord.meaning.trim() !== '' &&
-  newWord.example.trim() !== ''
+  newWord.word.trim() !== ''
 )
 
 function addManualWord() {
   if (!canAppend.value) return
-  words.value.push({ ...newWord })
+  const w = newWord.word.trim()
+  if (!words.value.includes(w)) words.value.push(w)
   newWord.word = ''
-  newWord.pos = ''
-  newWord.meaning = ''
-  newWord.example = ''
 }
 
 function removeWord(index: number) {
@@ -79,15 +74,14 @@ function parseFile(file: File) {
     if (!worksheet) return
     const json = XLSX.utils.sheet_to_json(worksheet)
     
-    // Map common column names
-    const importedWords = json.map((row: any) => ({
-      word: row.word || row.Word || row.vocab || '',
-      pos: row.pos || row.POS || row.type || '',
-      meaning: row.meaning || row.Meaning || row.definition || row.translation || '',
-      example: row.example || row.Example || row.sentence || ''
-    })).filter(w => w.word && w.meaning)
+    // Collect just the word string from the first column or a known header
+    const importedWords: string[] = json
+      .map((row: any) => String(row.word || row.Word || row.vocab || Object.values(row)[0] || '').trim())
+      .filter(w => w)
 
-    words.value = [...words.value, ...importedWords]
+    // Deduplicate
+    const existing = new Set(words.value)
+    importedWords.forEach(w => { if (!existing.has(w)) words.value.push(w) })
   }
   reader.readAsArrayBuffer(file)
 }
@@ -105,7 +99,8 @@ async function saveTheme() {
     .insert([{ 
       id: generatedId,
       theme_name: themeName.value.trim(),
-      data: { words: words.value }
+      data: words.value,
+      creater_uid: authStore.user?.id ?? null
     }])
     .select()
 
@@ -174,10 +169,7 @@ function resetAndClose() {
               </div>
               
               <div class="space-y-4 bg-earth-50/30 p-6 rounded-3xl border border-earth-300">
-                <input v-model="newWord.word" placeholder="Word (e.g., Ephemeral)" class="w-full bg-white border border-earth-300 placeholder:text-earth-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all" />
-                <input v-model="newWord.pos" placeholder="Part of Speech (e.g., Adjective)" class="w-full bg-white border border-earth-300 placeholder:text-earth-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all" />
-                <input v-model="newWord.meaning" placeholder="Meaning / Translation" class="w-full bg-white border border-earth-300 placeholder:text-earth-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all"></input>
-                <textarea v-model="newWord.example" placeholder="Usage Example sentence" class="w-full bg-white border border-earth-300 placeholder:text-earth-300 rounded-xl px-4 py-3 text-sm min-h-[80px] focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all"></textarea>
+                <input v-model="newWord.word" @keyup.enter="addManualWord" placeholder="Word (e.g., Ephemeral)" class="w-full bg-white border border-earth-300 placeholder:text-earth-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all" />
                 
                 <motion.button
                   :whileHover="canAppend ? { scale: 1.02 } : {}"
@@ -210,7 +202,7 @@ function resetAndClose() {
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z" /></svg>
                 </div>
                 <p class="font-serif text-earth-900 font-bold mb-2">Drag & Drop Spreadsheet</p>
-                <p class="text-earth-400 text-xs mb-6 px-6">Required columns: word, meaning. Optional: pos, example.</p>
+                <p class="text-earth-400 text-xs mb-6 px-6">Simply provide a file with a single column of words.</p>
                 
                 <label class="cursor-pointer bg-white border border-earth-300 text-earth-700 font-bold px-6 py-3 rounded-xl hover:shadow-md transition-all">
                   Browse Files
@@ -239,10 +231,9 @@ function resetAndClose() {
                 >
                   <div>
                     <div class="flex items-center gap-2 mb-1">
-                      <span class="font-serif font-bold text-earth-900">{{ word.word }}</span>
-                      <span v-if="word.pos" class="text-[9px] uppercase tracking-widest text-earth-400 font-bold bg-earth-100 px-1.5 py-0.5 rounded">{{ word.pos }}</span>
+                      <span class="font-serif font-bold text-earth-900">{{ word }}</span>
                     </div>
-                    <p class="text-earth-500 text-xs italic">{{ word.meaning }}</p>
+                    <p class="text-earth-500 text-xs italic">Details will auto-generate</p>
                   </div>
                   <button @click="removeWord(index)" class="opacity-0 group-hover:opacity-100 p-2 text-clay-400 hover:text-clay-600 transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" /></svg>
