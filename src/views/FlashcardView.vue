@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { motion, AnimatePresence } from 'motion-v'
 import { toPng } from 'html-to-image'
 import logo from '@/assets/Flashly-logo.webp'
+import EditThemeModal from '@/components/EditThemeModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -74,7 +75,10 @@ async function fetchWordDetails(word: string) {
                 if (!entry.example) {
                   for (const m of meanings) {
                     for (const def of m.definitions) {
-                      if (def.example) { entry.example = def.example; break; }
+                      if (def.example && def.example.length < 80) {
+                        entry.example = def.example;
+                        break;
+                      }
                     }
                     if (entry.example) break;
                   }
@@ -276,6 +280,15 @@ function downloadImage() {
   link.click()
 }
 
+const isEditModalOpen = ref(false)
+
+function handleThemeUpdated(newTheme: any) {
+  theme.value = newTheme
+  if (currentIndex.value >= words.value.length) {
+    currentIndex.value = Math.max(0, words.value.length - 1)
+  }
+}
+
 onMounted(() => {
   getCollection()
   // Pre-load voices (some browsers need this)
@@ -302,6 +315,14 @@ onMounted(() => {
           <h1 class="text-earth-900 font-serif text-lg font-bold leading-none">{{ theme.theme_name }}</h1>
           <p class="text-earth-400 text-[10px] font-bold uppercase tracking-widest mt-1">Active Collection</p>
         </div>
+        <button @click="isEditModalOpen = true"
+          class="w-10 h-10 rounded-xl bg-white border border-earth-100 text-earth-400 hover:text-earth-800 hover:shadow-md transition-all flex items-center justify-center"
+          title="Edit Collection">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -359,7 +380,7 @@ onMounted(() => {
               <!-- Footer Insight -->
               <p
                 class="absolute bottom-14 left-1/2 -translate-x-1/2 w-full text-earth-300 text-[10px] font-bold uppercase tracking-[0.2em]">
-                Tap to reveal · Swipe to navigate</p>
+                Tap to reveal</p>
               <p
                 class="absolute bottom-10 left-1/2 -translate-x-1/2 w-full text-earth-300 text-[9px] font-bold uppercase tracking-[0.2em]">
                 Card {{ currentIndex + 1 }} of {{ words.length }}</p>
@@ -383,7 +404,7 @@ onMounted(() => {
                 </svg>
               </button>
 
-              <div class="flex-1 flex flex-col justify-center w-full space-y-6">
+              <div class="flex-1 flex flex-col justify-center w-full space-y-4">
                 <!-- POS -->
                 <div v-if="currentWord.pos">
                   <p class="text-earth-500 text-[9px] font-bold uppercase tracking-widest mb-3">Part of Speech</p>
@@ -413,7 +434,7 @@ onMounted(() => {
                 </div>
 
                 <div v-if="currentWord.example">
-                  <p class="text-earth-500 text-[9px] font-bold uppercase tracking-widest mb-3">Example</p>
+                  <p class="text-earth-500 text-[9px] font-bold uppercase tracking-widest mb-2">Example</p>
                   <p class="text-earth-200 font-sans text-sm italic leading-relaxed px-4">
                     "{{ currentWord.example }}"
                   </p>
@@ -623,6 +644,9 @@ onMounted(() => {
       </motion.div>
     </div>
   </AnimatePresence>
+
+  <EditThemeModal :is-open="isEditModalOpen" :collection="theme" @close="isEditModalOpen = false"
+    @updated="handleThemeUpdated" />
 </template>
 
 <style scoped>

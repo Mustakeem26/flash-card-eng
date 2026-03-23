@@ -88,7 +88,7 @@ onMounted(() => {
       <!-- Archive Registry/Meta -->
       <div class="flex items-baseline justify-between mb-2 border-b-2 border-earth-100 pb-2">
         <h2 class="text-earth-800 font-serif font-bold text-xl">Archive Registry</h2>
-        <span class="text-earth-400 font-sans text-sm font-bold">{{ themes.length }} Collections Identified</span>
+        <span class="text-earth-400 font-sans text-sm font-bold">{{ themes.length }} Collections</span>
       </div>
       <div class="h-px w-full bg-gradient-to-r from-earth-300 via-earth-300 to-earth-300 mb-8 opacity-50"></div>
 
