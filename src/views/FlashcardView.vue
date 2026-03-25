@@ -75,7 +75,7 @@ async function fetchWordDetails(word: string) {
                 if (!entry.example) {
                   for (const m of meanings) {
                     for (const def of m.definitions) {
-                      if (def.example && def.example.length < 80) {
+                      if (def.example && def.example.length < 100) {
                         entry.example = def.example;
                         break;
                       }
@@ -407,18 +407,20 @@ onMounted(() => {
               <div class="flex-1 flex flex-col justify-center w-full space-y-4">
                 <!-- POS -->
                 <div v-if="currentWord.pos">
-                  <p class="text-earth-500 text-[9px] font-bold uppercase tracking-widest mb-3">Part of Speech</p>
+                  <p class="text-earth-500 sm:text-[9px] text-[7px] font-bold uppercase tracking-widest mb-3">Part of
+                    Speech</p>
                   <div
-                    class="inline-block px-4 py-1.5 bg-earth-50 border border-earth-700 rounded-full text-[10px] text-earth-600 font-bold uppercase tracking-widest">
+                    class="inline-block px-4 py-1.5 bg-earth-50 border border-earth-700 rounded-full sm:text-[10px] text-[8px] text-earth-600 font-bold uppercase tracking-widest">
                     {{ currentWord.pos }}
                   </div>
                 </div>
 
                 <div>
-                  <p class="text-earth-400 text-[10px] font-bold uppercase tracking-widest mb-2">Meaning</p>
+                  <p class="text-earth-400 sm:text-[9px] text-[7px] font-bold uppercase tracking-widest mb-2">Meaning
+                  </p>
                   <!-- Thai meaning + speaker -->
                   <div class="flex items-center justify-center gap-3">
-                    <p class="text-earth-50 font-serif italic text-2xl leading-relaxed">
+                    <p class="text-earth-50 font-serif italic sm:text-2xl text-1xl leading-relaxed">
                       {{ currentWord.meaning || 'Pending Explanation...' }}
                     </p>
                     <button v-if="currentWord.meaning" @click="speak(currentWord.meaning, 'th-TH', $event)"
@@ -434,15 +436,17 @@ onMounted(() => {
                 </div>
 
                 <div v-if="currentWord.example">
-                  <p class="text-earth-500 text-[9px] font-bold uppercase tracking-widest mb-2">Example</p>
-                  <p class="text-earth-200 font-sans text-sm italic leading-relaxed px-4">
+                  <p class="text-earth-500 sm:text-[9px] text-[7px] font-bold uppercase tracking-widest mb-2">Example
+                  </p>
+                  <p class="text-earth-200 font-sans text-sm italic leading-relaxed px-2">
                     "{{ currentWord.example }}"
                   </p>
                 </div>
 
                 <!-- Synonyms -->
                 <div v-if="currentWord.synonyms && currentWord.synonyms.length > 0">
-                  <p class="text-earth-500 text-[9px] font-bold uppercase tracking-widest mb-3">Synonyms</p>
+                  <p class="text-earth-500 sm:text-[9px] text-[7px] font-bold uppercase tracking-widest mb-3">Synonyms
+                  </p>
                   <div class="flex flex-wrap gap-2 justify-center">
                     <button v-for="syn in currentWord.synonyms" :key="syn" @click.stop="speak(syn, 'en-US', $event)"
                       class="flex items-center gap-1.5 px-3 py-1 bg-earth-50 border border-earth-700 rounded-full text-[11px] text-earth-600 font-bold italic tracking-wide hover:bg-earth-700 hover:text-earth-100 transition-all">
