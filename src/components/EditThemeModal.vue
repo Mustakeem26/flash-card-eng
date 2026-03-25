@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { motion, AnimatePresence } from 'motion-v'
 import * as XLSX from 'xlsx'
 import { supabase } from '@/lib/supabaseClient'
@@ -9,9 +9,10 @@ const authStore = useAuthStore()
 
 const props = defineProps<{
   isOpen: boolean
+  collection: any
 }>()
 
-const emit = defineEmits(['close', 'saved'])
+const emit = defineEmits(['close', 'updated'])
 
 const themeName = ref('')
 const words = ref<string[]>([])
@@ -25,6 +26,14 @@ const newWord = reactive({
 const canAppend = computed(() =>
   newWord.word.trim() !== ''
 )
+
+// Initialize data from prop
+watch(() => props.isOpen, (newVal) => {
+  if (newVal && props.collection) {
+    themeName.value = props.collection.theme_name || ''
+    words.value = [...(props.collection.data || [])]
+  }
+})
 
 function addManualWord() {
   if (!canAppend.value) return
@@ -86,34 +95,28 @@ function parseFile(file: File) {
   reader.readAsArrayBuffer(file)
 }
 
-async function saveTheme() {
-  if (!themeName.value.trim() || words.value.length === 0) return
+async function updateTheme() {
+  if (!themeName.value.trim() || words.value.length === 0 || !props.collection) return
 
   isSaving.value = true
 
-  // Generate a random 9-digit ID for the primary key
-  const generatedId = Math.floor(100000000 + Math.random() * 900000000)
-
   const { data, error } = await supabase
     .from('flashcards')
-    .insert([{
-      id: generatedId,
+    .update({
       theme_name: themeName.value.trim(),
-      data: words.value,
-      creater_uid: authStore.user?.id ?? null
-    }])
+      data: words.value
+    })
+    .eq('id', props.collection.id)
     .select()
 
   if (!error && data) {
-    emit('saved', data[0])
-    resetAndClose()
+    emit('updated', data[0])
+    emit('close')
   }
   isSaving.value = false
 }
 
-function resetAndClose() {
-  themeName.value = ''
-  words.value = []
+function close() {
   emit('close')
 }
 </script>
@@ -122,7 +125,7 @@ function resetAndClose() {
   <AnimatePresence>
     <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6">
       <!-- Backdrop -->
-      <motion.div initial="{ opacity: 0 }" animate="{ opacity: 1 }" exit="{ opacity: 0 }" @click="resetAndClose"
+      <motion.div initial="{ opacity: 0 }" animate="{ opacity: 1 }" exit="{ opacity: 0 }" @click="close"
         class="absolute inset-0 bg-earth-900/40 backdrop-blur-sm"></motion.div>
 
       <!-- Modal Content -->
@@ -132,10 +135,11 @@ function resetAndClose() {
         <!-- Header -->
         <div class="px-8 py-6 border-b border-earth-100 flex justify-between items-center bg-earth-50/50">
           <div>
-            <h2 class="text-2xl font-serif text-earth-900 font-bold">New Collection</h2>
-            <p class="text-earth-500 text-xs font-sans font-bold uppercase tracking-widest mt-1">Archive Entry Form</p>
+            <h2 class="text-2xl font-serif text-earth-900 font-bold">Edit Collection</h2>
+            <p class="text-earth-500 text-xs font-sans font-bold uppercase tracking-widest mt-1">Archive Entry
+              Modification</p>
           </div>
-          <button @click="resetAndClose" class="text-earth-300 hover:text-earth-600 transition-colors">
+          <button @click="close" class="text-earth-300 hover:text-earth-600 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -183,7 +187,7 @@ function resetAndClose() {
                 :class="dragActive ? 'border-sage-400 bg-sage-50/30' : 'border-earth-300 bg-earth-50/30'"
                 class="relative border-2 border-dashed rounded-3xl p-5 flex flex-col items-center justify-center text-center transition-all min-h-[200px]">
                 <div
-                  class="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-earth-300 mb-6">
+                  class="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-earth-300 mb-4">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -235,14 +239,14 @@ function resetAndClose() {
 
         <!-- Footer -->
         <div class="px-8 py-6 border-t border-earth-100 bg-white flex justify-end gap-4">
-          <button @click="resetAndClose"
+          <button @click="close"
             class="px-8 py-3 text-earth-500 font-bold text-sm tracking-wide hover:text-earth-800 transition-colors">
             Cancel
           </button>
-          <motion.button :whileHover="{ scale: 1.02 }" :whileTap="{ scale: 0.98 }" @click="saveTheme"
+          <motion.button :whileHover="{ scale: 1.02 }" :whileTap="{ scale: 0.98 }" @click="updateTheme"
             :disabled="!themeName || words.length === 0 || isSaving"
             class="bg-earth-800 text-white font-bold px-10 py-3 rounded-2xl hover:bg-earth-900 transition-colors disabled:opacity-30 disabled:cursor-not-allowed shadow-xl shadow-earth-900/10">
-            {{ isSaving ? 'Archiving Collection...' : 'Create Collection' }}
+            {{ isSaving ? 'Updating Collection...' : 'Save Changes' }}
           </motion.button>
         </div>
       </motion.div>
