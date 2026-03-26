@@ -14,12 +14,13 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'saved'])
 
 const themeName = ref('')
-const words = ref<string[]>([])
+const words = ref<{word: string, meaning: string}[]>([])
 const isSaving = ref(false)
 const dragActive = ref(false)
 
 const newWord = reactive({
-  word: ''
+  word: '',
+  meaning: ''
 })
 
 const canAppend = computed(() =>
@@ -29,8 +30,10 @@ const canAppend = computed(() =>
 function addManualWord() {
   if (!canAppend.value) return
   const w = newWord.word.trim()
-  if (!words.value.includes(w)) words.value.push(w)
+  const m = newWord.meaning.trim()
+  if (!words.value.find(x => x.word === w)) words.value.push({ word: w, meaning: m })
   newWord.word = ''
+  newWord.meaning = ''
 }
 
 function removeWord(index: number) {
@@ -74,14 +77,16 @@ function parseFile(file: File) {
     if (!worksheet) return
     const json = XLSX.utils.sheet_to_json(worksheet)
 
-    // Collect just the word string from the first column or a known header
-    const importedWords: string[] = json
-      .map((row: any) => String(row.word || row.Word || row.vocab || Object.values(row)[0] || '').trim())
-      .filter(w => w)
+    const importedWords = json
+      .map((row: any) => ({
+        word: String(row.word || row.Word || row.vocab || Object.keys(row)[0] || '').trim(),
+        meaning: String(row.meaning || row.Meaning || row.translation || Object.values(row)[0] || '').trim()
+      }))
+      .filter(w => w.word)
 
     // Deduplicate
-    const existing = new Set(words.value)
-    importedWords.forEach(w => { if (!existing.has(w)) words.value.push(w) })
+    const existing = new Set(words.value.map(w => w.word))
+    importedWords.forEach(w => { if (!existing.has(w.word)) words.value.push(w) })
   }
   reader.readAsArrayBuffer(file)
 }
@@ -160,8 +165,12 @@ function resetAndClose() {
               </div>
 
               <div class="space-y-4 bg-earth-50/30 p-11 rounded-3xl border border-earth-300">
-                <input v-model="newWord.word" @keyup.enter="addManualWord" placeholder="Word (e.g., Ephemeral)"
-                  class="w-full bg-white border border-earth-300 placeholder:text-earth-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all" />
+                <div class="space-y-3">
+                  <input v-model="newWord.word" @keyup.enter="addManualWord" placeholder="Word (e.g., Ephemeral)"
+                    class="w-full bg-white border border-earth-300 placeholder:text-earth-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all" />
+                  <input v-model="newWord.meaning" @keyup.enter="addManualWord" placeholder="Meaning (Optional)"
+                    class="w-full bg-white border border-earth-300 placeholder:text-earth-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all" />
+                </div>
 
                 <motion.button :whileHover="canAppend ? { scale: 1.02 } : {}"
                   :whileTap="canAppend ? { scale: 0.98 } : {}" @click="addManualWord" :disabled="!canAppend"
@@ -215,9 +224,9 @@ function resetAndClose() {
                   class="group flex items-start justify-between bg-earth-50/50 border border-earth-100 p-4 rounded-2xl hover:bg-white hover:shadow-md transition-all">
                   <div>
                     <div class="flex items-center gap-2 mb-1">
-                      <span class="font-serif font-bold text-earth-900">{{ word }}</span>
+                      <span class="font-serif font-bold text-earth-900">{{ word.word }}</span>
                     </div>
-                    <p class="text-earth-500 text-xs italic">Details will auto-generate</p>
+                    <p class="text-earth-500 text-xs italic">{{ word.meaning || 'Details will auto-generate' }}</p>
                   </div>
                   <button @click="removeWord(index)"
                     class="opacity-0 group-hover:opacity-100 p-2 text-clay-400 hover:text-clay-600 transition-all">
