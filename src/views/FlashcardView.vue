@@ -15,8 +15,11 @@ const isFlipped = ref(false)
 const loading = ref(true)
 const direction = ref(1) // 1 for next, -1 for prev
 
-// data column is now a plain string array: ["word1", "word2", ...]
-const words = computed<string[]>(() => theme.value?.data || [])
+// data column is now an array of objects: [{word: "word1", meaning: "meaning1"}, ...]
+// Map old string arrays to objects for backward compatibility
+const words = computed<{word: string, meaning: string}[]>(() => 
+  (theme.value?.data || []).map((w: any) => typeof w === 'string' ? { word: w, meaning: '' } : w)
+)
 
 // Reactive cache: { [word]: { pos, meaning, example, synonyms, isFetching } }
 const enrichedWords = ref<Record<string, any>>({})
@@ -29,9 +32,17 @@ function getEnriched(word: string) {
 }
 
 const currentWord = computed(() => {
-  const word = words.value[currentIndex.value]
-  if (!word) return null
-  return { word, ...getEnriched(word) }
+  const wordObj = words.value[currentIndex.value]
+  if (!wordObj) return null
+  const enriched = getEnriched(wordObj.word)
+  return { 
+    word: wordObj.word, 
+    meaning: wordObj.meaning || enriched.meaning, 
+    pos: enriched.pos, 
+    example: enriched.example, 
+    synonyms: enriched.synonyms, 
+    isFetching: enriched.isFetching 
+  }
 })
 
 // Sliding window of 15 dots centered on currentIndex
@@ -48,13 +59,16 @@ const visibleDots = computed(() => {
   return Array.from({ length: end - start }, (_, i) => start + i)
 })
 
-async function fetchWordDetails(word: string) {
-  if (!word) return;
+async function fetchWordDetails(wordObj: {word: string, meaning: string}) {
+  if (!wordObj || !wordObj.word) return;
+  const word = wordObj.word;
   const entry = getEnriched(word);
-  if (entry.isFetching || (entry.pos && entry.meaning && entry.example)) return;
+  
+  const hasMeaning = wordObj.meaning || entry.meaning;
+  if (entry.isFetching || (entry.pos && hasMeaning && entry.example)) return;
 
   const needsDict = !entry.pos || !entry.example;
-  const needsTrans = !entry.meaning;
+  const needsTrans = !hasMeaning;
   if (!needsDict && !needsTrans) return;
 
   entry.isFetching = true;
@@ -132,9 +146,8 @@ async function getCollection() {
   if (data) {
     theme.value = data
     // Pre-fetch first two words
-    const list: string[] = data.data || []
-    if (list[0]) fetchWordDetails(list[0])
-    if (list[1]) fetchWordDetails(list[1])
+    if (words.value[0]) fetchWordDetails(words.value[0])
+    if (words.value[1]) fetchWordDetails(words.value[1])
   }
   loading.value = false
 }
