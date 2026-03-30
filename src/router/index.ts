@@ -48,7 +48,7 @@ router.beforeEach(async (to, from, next) => {
     // Redirect to home if already logged in and trying to access the login page
     next('/home') 
   } else {
-    next('/')
+    next()
   }
 })
 
