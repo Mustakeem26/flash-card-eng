@@ -17,8 +17,8 @@ const direction = ref(1) // 1 for next, -1 for prev
 
 // data column is now an array of objects: [{word: "word1", meaning: "meaning1"}, ...]
 // Map old string arrays to objects for backward compatibility
-const words = computed<{word: string, meaning: string}[]>(() => 
-  (theme.value?.data || []).map((w: any) => typeof w === 'string' ? { word: w, meaning: '' } : w)
+const words = computed<{word: string, meaning: string, pos?: string}[]>(() => 
+  (theme.value?.data || []).map((w: any) => typeof w === 'string' ? { word: w, meaning: '', pos: '' } : w)
 )
 
 // Reactive cache: { [word]: { pos, meaning, example, synonyms, isFetching } }
@@ -38,7 +38,7 @@ const currentWord = computed(() => {
   return { 
     word: wordObj.word, 
     meaning: wordObj.meaning || enriched.meaning, 
-    pos: enriched.pos, 
+    pos: wordObj.pos || enriched.pos, 
     example: enriched.example, 
     synonyms: enriched.synonyms, 
     isFetching: enriched.isFetching 
@@ -59,15 +59,16 @@ const visibleDots = computed(() => {
   return Array.from({ length: end - start }, (_, i) => start + i)
 })
 
-async function fetchWordDetails(wordObj: {word: string, meaning: string}) {
+async function fetchWordDetails(wordObj: {word: string, meaning: string, pos?: string}) {
   if (!wordObj || !wordObj.word) return;
   const word = wordObj.word;
   const entry = getEnriched(word);
   
   const hasMeaning = wordObj.meaning || entry.meaning;
-  if (entry.isFetching || (entry.pos && hasMeaning && entry.example)) return;
+  const hasPos = wordObj.pos || entry.pos;
+  if (entry.isFetching || (hasPos && hasMeaning && entry.example)) return;
 
-  const needsDict = !entry.pos || !entry.example;
+  const needsDict = !hasPos || !entry.example;
   const needsTrans = !hasMeaning;
   if (!needsDict && !needsTrans) return;
 
@@ -85,7 +86,7 @@ async function fetchWordDetails(wordObj: {word: string, meaning: string}) {
               const meanings = data[0].meanings;
               if (meanings && meanings.length > 0) {
                 const firstMeaning = meanings[0];
-                if (!entry.pos) entry.pos = firstMeaning.partOfSpeech;
+                if (!(wordObj.pos || entry.pos)) entry.pos = firstMeaning.partOfSpeech;
                 if (!entry.example) {
                   for (const m of meanings) {
                     for (const def of m.definitions) {

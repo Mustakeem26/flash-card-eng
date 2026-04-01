@@ -14,13 +14,14 @@ const props = defineProps<{
 const emit = defineEmits(['close', 'saved'])
 
 const themeName = ref('')
-const words = ref<{word: string, meaning: string}[]>([])
+const words = ref<{word: string, meaning: string, pos: string}[]>([])
 const isSaving = ref(false)
 const dragActive = ref(false)
 
 const newWord = reactive({
   word: '',
-  meaning: ''
+  meaning: '',
+  pos: ''
 })
 
 const canAppend = computed(() =>
@@ -31,9 +32,11 @@ function addManualWord() {
   if (!canAppend.value) return
   const w = newWord.word.trim()
   const m = newWord.meaning.trim()
-  if (!words.value.find(x => x.word === w)) words.value.push({ word: w, meaning: m })
+  const p = newWord.pos.trim()
+  if (!words.value.find(x => x.word === w)) words.value.push({ word: w, meaning: m, pos: p })
   newWord.word = ''
   newWord.meaning = ''
+  newWord.pos = ''
 }
 
 function removeWord(index: number) {
@@ -79,8 +82,9 @@ function parseFile(file: File) {
 
     const importedWords = json
       .map((row: any) => ({
-        word: String(row.word || row.Word || row.vocab || Object.keys(row)[0] || '').trim(),
-        meaning: String(row.meaning || row.Meaning || row.translation || Object.values(row)[0] || '').trim()
+        word: String(row.word || row.Word || row.vocab || row.Vocabulary || Object.keys(row)[0] || '').trim(),
+        meaning: String(row.meaning || row.Meaning || row.translation || row.Translation || '').trim(),
+        pos: String(row.pos || row.POS || row['part of speech'] || row.Type || row.Category || '').trim()
       }))
       .filter(w => w.word)
 
@@ -168,8 +172,12 @@ function resetAndClose() {
                 <div class="space-y-3">
                   <input v-model="newWord.word" @keyup.enter="addManualWord" placeholder="Word (e.g., Ephemeral)"
                     class="w-full bg-white border border-earth-300 placeholder:text-earth-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all" />
-                  <input v-model="newWord.meaning" @keyup.enter="addManualWord" placeholder="Meaning (Optional)"
-                    class="w-full bg-white border border-earth-300 placeholder:text-earth-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all" />
+                  <div class="grid grid-cols-2 gap-3">
+                    <input v-model="newWord.meaning" @keyup.enter="addManualWord" placeholder="Meaning (Optional)"
+                      class="w-full bg-white border border-earth-300 placeholder:text-earth-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all" />
+                    <input v-model="newWord.pos" @keyup.enter="addManualWord" placeholder="POS (e.g., Adj)"
+                      class="w-full bg-white border border-earth-300 placeholder:text-earth-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-earth-200 transition-all" />
+                  </div>
                 </div>
 
                 <motion.button :whileHover="canAppend ? { scale: 1.02 } : {}"
@@ -225,6 +233,10 @@ function resetAndClose() {
                   <div>
                     <div class="flex items-center gap-2 mb-1">
                       <span class="font-serif font-bold text-earth-900">{{ word.word }}</span>
+                      <span v-if="word.pos"
+                        class="px-2 py-0.5 bg-earth-800 text-white text-[8px] font-bold rounded-full uppercase tracking-widest">
+                        {{ word.pos }}
+                      </span>
                     </div>
                     <p class="text-earth-500 text-xs italic">{{ word.meaning || 'Details will auto-generate' }}</p>
                   </div>
