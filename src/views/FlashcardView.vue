@@ -6,9 +6,11 @@ import { motion, AnimatePresence } from 'motion-v'
 import { toPng } from 'html-to-image'
 import logo from '@/assets/Flashly-logo.webp'
 import EditThemeModal from '@/components/EditThemeModal.vue'
+import { useHistoryStore } from '@/stores/historyStore'
 
 const route = useRoute()
 const router = useRouter()
+const historyStore = useHistoryStore()
 const theme = ref<any>(null)
 const currentIndex = ref(0)
 const isFlipped = ref(false)
@@ -146,6 +148,7 @@ async function getCollection() {
 
   if (data) {
     theme.value = data
+    historyStore.addToHistory(data.id)
     // Pre-fetch first two words
     if (words.value[0]) fetchWordDetails(words.value[0])
     if (words.value[1]) fetchWordDetails(words.value[1])
