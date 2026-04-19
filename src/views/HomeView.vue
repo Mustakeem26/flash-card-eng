@@ -185,13 +185,15 @@ onMounted(() => {
         class="flex flex-col sm:flex-row sm:items-baseline justify-between mb-2 border-b-2 border-earth-100 pb-2 gap-2">
         <div class="flex items-center gap-4">
           <h2 class="text-earth-800 font-serif font-bold text-xl">Archive Registry</h2>
-          <select @change="scrollToGroup" v-if="Object.keys(groupedThemes).length > 0"
-            class="bg-white border border-earth-200 text-earth-700 text-sm rounded-lg focus:ring-earth-500 focus:border-earth-500 block p-1.5 px-3 cursor-pointer hover:bg-earth-50 transition-colors outline-none font-sans">
-            <option value="" disabled selected>Quick Scroll</option>
-            <option v-for="key in Object.keys(groupedThemes)" :key="key" :value="key">
-              {{ key }}
-            </option>
-          </select>
+          <Teleport to="#navbar-quick-scroll">
+            <select @change="scrollToGroup" v-if="Object.keys(groupedThemes).length > 0"
+              class="bg-white border border-earth-200 text-earth-700 text-sm rounded-lg focus:ring-earth-500 focus:border-earth-500 block p-1.5 px-3 cursor-pointer hover:bg-earth-50 transition-colors outline-none font-sans w-32 sm:w-auto truncate shadow-sm">
+              <option value="" disabled selected>Quick Scroll</option>
+              <option v-for="key in Object.keys(groupedThemes)" :key="key" :value="key">
+                {{ key }}
+              </option>
+            </select>
+          </Teleport>
         </div>
         <span class="text-earth-400 font-sans text-sm font-bold">{{ themes.length }} Collections</span>
       </div>
@@ -227,7 +229,7 @@ onMounted(() => {
               :transition="{ delay: index * 0.08, duration: 0.6, ease: [0.16, 1, 0.3, 1] }" @click="goToTheme(theme.id)"
               class="group relative cursor-pointer bg-red-50/50 border border-red-100 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(140,111,74,0.08)] hover:-translate-y-1 transition-all duration-500">
               <button @click="(e) => toggleFavorite(e, theme.id)"
-                class="absolute top-4 right-4 z-10 p-2 text-red-500 hover:scale-110 transition-transform">
+                class="absolute top-4 right-4 z-8 p-2 text-red-500 hover:scale-110 transition-transform">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 fill-current" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
@@ -262,7 +264,7 @@ onMounted(() => {
               :transition="{ delay: index * 0.08, duration: 0.6, ease: [0.16, 1, 0.3, 1] }" @click="goToTheme(theme.id)"
               class="group relative cursor-pointer bg-earth-50/50 border border-earth-100 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(140,111,74,0.08)] hover:-translate-y-1 transition-all duration-500">
               <button @click="(e) => toggleFavorite(e, theme.id)"
-                class="absolute top-4 right-4 z-10 p-2 hover:scale-110 transition-transform"
+                class="absolute top-4 right-4 z-8 p-2 hover:scale-110 transition-transform"
                 :class="historyStore.isFavorite(theme.id) ? 'text-red-500' : 'text-earth-300 hover:text-red-400'">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6"
                   :fill="historyStore.isFavorite(theme.id) ? 'currentColor' : 'none'" viewBox="0 0 24 24"
@@ -298,7 +300,7 @@ onMounted(() => {
               :transition="{ delay: index * 0.08, duration: 0.6, ease: [0.16, 1, 0.3, 1] }" @click="goToTheme(theme.id)"
               class="group relative cursor-pointer bg-white border border-earth-100 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(140,111,74,0.08)] hover:-translate-y-1 transition-all duration-500">
               <button @click="(e) => toggleFavorite(e, theme.id)"
-                class="absolute top-4 right-4 z-10 p-2 hover:scale-110 transition-transform"
+                class="absolute top-4 right-4 z-8 p-2 hover:scale-110 transition-transform"
                 :class="historyStore.isFavorite(theme.id) ? 'text-red-500' : 'text-earth-300 hover:text-red-400'">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6"
                   :fill="historyStore.isFavorite(theme.id) ? 'currentColor' : 'none'" viewBox="0 0 24 24"
