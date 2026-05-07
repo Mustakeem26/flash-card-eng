@@ -18,6 +18,12 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
+      path: '/popcard/:id',
+      name: 'popcard',
+      component: () => import('../views/PopCardView.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/',
       name: 'login',
       component: () => import('../views/LoginView.vue')

@@ -19,7 +19,7 @@ const direction = ref(1) // 1 for next, -1 for prev
 
 // data column is now an array of objects: [{word: "word1", meaning: "meaning1"}, ...]
 // Map old string arrays to objects for backward compatibility
-const words = computed<{word: string, meaning: string, pos?: string}[]>(() => 
+const words = computed<{ word: string, meaning: string, pos?: string }[]>(() =>
   (theme.value?.data || []).map((w: any) => typeof w === 'string' ? { word: w, meaning: '', pos: '' } : w)
 )
 
@@ -37,13 +37,13 @@ const currentWord = computed(() => {
   const wordObj = words.value[currentIndex.value]
   if (!wordObj) return null
   const enriched = getEnriched(wordObj.word)
-  return { 
-    word: wordObj.word, 
-    meaning: wordObj.meaning || enriched.meaning, 
-    pos: wordObj.pos || enriched.pos, 
-    example: enriched.example, 
-    synonyms: enriched.synonyms, 
-    isFetching: enriched.isFetching 
+  return {
+    word: wordObj.word,
+    meaning: wordObj.meaning || enriched.meaning,
+    pos: wordObj.pos || enriched.pos,
+    example: enriched.example,
+    synonyms: enriched.synonyms,
+    isFetching: enriched.isFetching
   }
 })
 
@@ -61,11 +61,11 @@ const visibleDots = computed(() => {
   return Array.from({ length: end - start }, (_, i) => start + i)
 })
 
-async function fetchWordDetails(wordObj: {word: string, meaning: string, pos?: string}) {
+async function fetchWordDetails(wordObj: { word: string, meaning: string, pos?: string }) {
   if (!wordObj || !wordObj.word) return;
   const word = wordObj.word;
   const entry = getEnriched(word);
-  
+
   const hasMeaning = wordObj.meaning || entry.meaning;
   const hasPos = wordObj.pos || entry.pos;
   if (entry.isFetching || (hasPos && hasMeaning && entry.example)) return;
@@ -306,6 +306,10 @@ function handleThemeUpdated(newTheme: any) {
   }
 }
 
+function goToPopCard() {
+  router.push(`/popcard/${theme.value.id}`)
+}
+
 onMounted(() => {
   getCollection()
   // Pre-load voices (some browsers need this)
@@ -332,6 +336,14 @@ onMounted(() => {
           <h1 class="text-earth-900 font-serif text-lg font-bold leading-none">{{ theme.theme_name }}</h1>
           <p class="text-earth-400 text-[10px] font-bold uppercase tracking-widest mt-1">Active Collection</p>
         </div>
+        <button @click="goToPopCard"
+          class="w-10 h-10 rounded-xl bg-white border border-earth-100 text-earth-400 hover:text-earth-800 hover:shadow-md transition-all flex items-center justify-center"
+          title="Pop Card">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+          </svg>
+        </button>
         <button @click="isEditModalOpen = true"
           class="w-10 h-10 rounded-xl bg-white border border-earth-100 text-earth-400 hover:text-earth-800 hover:shadow-md transition-all flex items-center justify-center"
           title="Edit Collection">

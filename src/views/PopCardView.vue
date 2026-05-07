@@ -1,0 +1,208 @@
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { supabase } from '@/lib/supabaseClient'
+import { motion } from 'motion-v'
+
+const route = useRoute()
+const router = useRouter()
+const theme = ref<any>(null)
+const loading = ref(true)
+
+const gameCards = ref<any[]>([])
+const selectedIndices = ref<number[]>([])
+const matchedIds = ref<string[]>([])
+const mismatchedIndices = ref<number[]>([])
+const usedWordIds = ref<string[]>([])
+const isGameFinished = ref(false)
+
+function initGame() {
+    if (!theme.value || !theme.value.data) return
+
+    const all = theme.value.data.map((w: any) => typeof w === 'string' ? { word: w, meaning: '', pos: '' } : w)
+    const remaining = all.filter((w: any) => !usedWordIds.value.includes(w.word))
+
+    if (remaining.length === 0) {
+        isGameFinished.value = true
+        return
+    }
+
+    // Reset round state
+    selectedIndices.value = []
+    matchedIds.value = []
+
+    const picked = [...remaining].sort(() => Math.random() - 0.5).slice(0, 6)
+    const cards: any[] = []
+    picked.forEach((w) => {
+        cards.push({ type: 'word', content: w.word, id: w.word })
+        cards.push({ type: 'meaning', content: w.meaning, pos: w.pos, id: w.word })
+    })
+
+    gameCards.value = cards.sort(() => Math.random() - 0.5)
+}
+
+function resetGame() {
+    usedWordIds.value = []
+    isGameFinished.value = false
+    initGame()
+}
+
+function handleCardClick(idx: number) {
+    const card = gameCards.value[idx]
+    if (matchedIds.value.includes(card.id)) return
+
+    // If already selected, unselect it
+    if (selectedIndices.value.includes(idx)) {
+        selectedIndices.value = selectedIndices.value.filter(i => i !== idx)
+        return
+    }
+
+    if (selectedIndices.value.length >= 2) return
+
+    selectedIndices.value.push(idx)
+
+    if (selectedIndices.value.length === 2) {
+        const i1 = selectedIndices.value[0]!
+        const i2 = selectedIndices.value[1]!
+        const c1 = gameCards.value[i1]
+        const c2 = gameCards.value[i2]
+
+        if (c1.id === c2.id && c1.type !== c2.type) {
+            // Match!
+            setTimeout(() => {
+                matchedIds.value.push(c1.id)
+                selectedIndices.value = []
+
+                // Check if round finished
+                if (matchedIds.value.length === gameCards.value.length / 2) {
+                    setTimeout(() => {
+                        const matchedInRound = [...new Set(gameCards.value.map(c => c.id))]
+                        usedWordIds.value.push(...matchedInRound)
+                        initGame()
+                    }, 600)
+                }
+            }, 200)
+        } else {
+            // No match - show error color then reset
+            mismatchedIndices.value = [...selectedIndices.value]
+            setTimeout(() => {
+                mismatchedIndices.value = []
+                selectedIndices.value = []
+            }, 100)
+        }
+    }
+}
+
+async function getCollection() {
+    const { data, error } = await supabase
+        .from('flashcards')
+        .select()
+        .eq('id', route.params.id)
+        .single()
+
+    if (data) {
+        theme.value = data
+        initGame()
+    }
+    loading.value = false
+}
+
+
+onMounted(() => {
+    getCollection()
+})
+</script>
+
+<template>
+    <div class="min-h-screen bg-earth-100 flex flex-col items-center justify-center p-6 pb-24 overflow-hidden">
+        <!-- Navigation Header -->
+        <div class="fixed top-0 left-0 right-0 p-8 flex justify-between items-center z-20 pointer-events-none">
+            <motion.button :initial="{ opacity: 0, x: -20 }" :animate="{ opacity: 1, x: 0 }"
+                @click="router.push(`/flashcard/${route.params.id}`)"
+                class="flex items-center gap-2 text-earth-500 font-bold text-sm tracking-wide hover:text-earth-800 transition-colors pointer-events-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12" />
+                    <polyline points="12 19 5 12 12 5" />
+                </svg>
+                <span>Back</span>
+            </motion.button>
+
+            <div v-if="theme" class="flex items-center gap-6 pointer-events-auto">
+                <div class="text-right">
+                    <h1 class="text-earth-900 font-serif text-lg font-bold leading-none">{{ theme.theme_name }}</h1>
+                    <p class="text-earth-400 text-[10px] font-bold uppercase tracking-widest mt-1">Active Collection</p>
+                </div>
+            </div>
+        </div>
+
+        <div v-if="!loading && theme && !isGameFinished"
+            class="w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-16 lg:px-48 py-12">
+            <div class="grid grid-cols-3 md:grid-cols-4 gap-1">
+                <motion.div v-for="(item, idx) in gameCards" :key="idx"
+                    class="aspect-square rounded-2xl shadow-[0_10px_30px_rgba(140,111,74,0.05)] transition-all flex items-center justify-center p-4 text-center group cursor-pointer border-2"
+                    :class="[
+                        matchedIds.includes(item.id) ? 'opacity-0 pointer-events-none' : 'opacity-100',
+                        mismatchedIndices.includes(idx)
+                            ? 'bg-clay-500 border-clay-500 shadow-clay-500/20'
+                            : selectedIndices.includes(idx)
+                                ? 'bg-earth-800 border-earth-800 shadow-earth-800/20'
+                                : 'bg-white border-earth-100 hover:shadow-[0_20px_40px_rgba(140,111,74,0.1)]'
+                    ]" @click="handleCardClick(idx)" :initial="{ opacity: 0, scale: 0.8, y: 20 }" :animate="{
+                        opacity: matchedIds.includes(item.id) ? 0 : 1,
+                        scale: matchedIds.includes(item.id) ? 0.8 : 1,
+                        y: 0,
+                        x: mismatchedIndices.includes(idx) ? [0, -10, 10, -10, 10, 0] : 0
+                    }" :transition="{
+                        opacity: { duration: 0.5 },
+                        scale: { duration: 0.5 },
+                        x: { duration: 0.4 },
+                        default: { type: 'spring', damping: 20, delay: matchedIds.includes(item.id) ? 0 : idx * 0.05 }
+                    }">
+                    <div v-if="item.type === 'word'">
+                        <p class="font-serif font-bold text-lg md:text-xl transition-transform"
+                            :class="mismatchedIndices.includes(idx) || selectedIndices.includes(idx) ? 'text-white scale-110' : 'text-earth-800 group-hover:scale-110'">
+                            {{ item.content }}
+                        </p>
+                    </div>
+                    <div v-else class="flex flex-col items-center gap-1">
+                        <p class="font-serif italic text-sm md:text-base leading-tight"
+                            :class="mismatchedIndices.includes(idx) || selectedIndices.includes(idx) ? 'text-earth-100' : 'text-earth-700'">
+                            {{ item.content || '...' }}
+                        </p>
+                        <p v-if="item.pos" class="text-[10px] font-bold uppercase tracking-widest"
+                            :class="mismatchedIndices.includes(idx) || selectedIndices.includes(idx) ? 'text-earth-300' : 'text-earth-400'">
+                            ({{ item.pos }})
+                        </p>
+                    </div>
+                </motion.div>
+            </div>
+        </div>
+
+        <!-- Success Message -->
+        <motion.div v-if="isGameFinished" initial="{ opacity: 0, scale: 0.9 }" animate="{ opacity: 1, scale: 1 }"
+            class="text-center p-12 bg-white rounded-[40px] shadow-2xl border border-earth-100 max-w-lg mx-auto z-30">
+            <div class="w-20 h-20 bg-sage-100 rounded-full flex items-center justify-center mx-auto mb-8">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-sage-600" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <h2 class="text-4xl font-serif text-earth-900 font-bold mb-4 italic">Success!</h2>
+            <p class="text-earth-500 mb-10 leading-relaxed">Wonderful! You've mastered all the words in this collection.
+                Keep up the great work!</p>
+            <div class="flex flex-col gap-4">
+                <button @click="resetGame"
+                    class="w-full bg-earth-800 text-white font-bold py-4 rounded-2xl hover:bg-earth-900 transition-all shadow-xl shadow-earth-800/20">
+                    Play Again
+                </button>
+                <button @click="router.push(`/flashcard/${route.params.id}`)"
+                    class="w-full bg-earth-50 text-earth-600 font-bold py-4 rounded-2xl hover:bg-earth-100 transition-all">
+                    Back to Collection
+                </button>
+            </div>
+        </motion.div>
+    </div>
+</template>
+
+<style scoped></style>
