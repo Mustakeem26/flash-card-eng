@@ -251,11 +251,24 @@ function speak(text: string, lang: string, e?: MouseEvent) {
   utter.lang = lang
   utter.rate = 0.9
 
-  // Prefer a native voice for the language
+  // Prefer a native high-quality voice for the language
   const voices = window.speechSynthesis.getVoices()
   const langPrefix = lang.substring(0, 2)
-  const match = voices.find((v) => v.lang.startsWith(langPrefix) && v.localService)
-    ?? voices.find((v) => v.lang.startsWith(langPrefix))
+  
+  let match = null
+  if (langPrefix === 'en') {
+    // For English, prioritize premium/natural sounding voices
+    match = voices.find(v => v.name === 'Samantha') || 
+            voices.find(v => v.name === 'Google US English') ||
+            voices.find(v => v.name === 'Alex') ||
+            voices.find(v => v.lang.startsWith('en') && v.name.includes('Premium')) ||
+            voices.find(v => v.lang.startsWith('en') && v.localService) ||
+            voices.find(v => v.lang.startsWith('en'))
+  } else {
+    match = voices.find((v) => v.lang.startsWith(langPrefix) && v.localService)
+      ?? voices.find((v) => v.lang.startsWith(langPrefix))
+  }
+
   if (match) utter.voice = match
 
   utter.onstart = () => { isSpeaking.value = true }
@@ -300,6 +313,10 @@ function downloadImage() {
 const isEditModalOpen = ref(false)
 
 function handleThemeUpdated(newTheme: any) {
+  if (!newTheme) {
+    router.push('/home')
+    return
+  }
   theme.value = newTheme
   if (currentIndex.value >= words.value.length) {
     currentIndex.value = Math.max(0, words.value.length - 1)

@@ -16,6 +16,22 @@ const mismatchedIndices = ref<number[]>([])
 const usedWordIds = ref<string[]>([])
 const isGameFinished = ref(false)
 
+const pastelColors = [
+    '#FFC2D1', // Pink
+    '#FFE8D6', // Cream/Peach
+    '#B7E4C7', // Mint
+    '#A8DADC', // Sky Blue
+    '#E2BCFE', // Lavender
+    '#FFD7BA'  // Apricot
+]
+const activeColor = ref(pastelColors[0])
+const clickCount = ref(0)
+
+function pickRandomColor() {
+    const others = pastelColors.filter(c => c !== activeColor.value)
+    activeColor.value = others[Math.floor(Math.random() * others.length)]
+}
+
 function initGame() {
     if (!theme.value || !theme.value.data) return
 
@@ -30,6 +46,7 @@ function initGame() {
     // Reset round state
     selectedIndices.value = []
     matchedIds.value = []
+    clickCount.value = 0
 
     const picked = [...remaining].sort(() => Math.random() - 0.5).slice(0, 6)
     const cards: any[] = []
@@ -50,6 +67,12 @@ function resetGame() {
 function handleCardClick(idx: number) {
     const card = gameCards.value[idx]
     if (matchedIds.value.includes(card.id)) return
+
+    // Pick new color every 2 clicks (start of a pair)
+    if (clickCount.value % 2 === 0) {
+        pickRandomColor()
+    }
+    clickCount.value++
 
     // If already selected, unselect it
     if (selectedIndices.value.includes(idx)) {
@@ -140,15 +163,19 @@ onMounted(() => {
             class="w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-16 lg:px-48 py-12">
             <div class="grid grid-cols-3 md:grid-cols-4 gap-1">
                 <motion.div v-for="(item, idx) in gameCards" :key="idx"
-                    class="aspect-square rounded-2xl shadow-[0_10px_30px_rgba(140,111,74,0.05)] transition-all flex items-center justify-center p-4 text-center group cursor-pointer border-2"
+                    class="aspect-square rounded-md shadow-[0_10px_30px_rgba(140,111,74,0.05)] transition-all flex items-center justify-center p-4 text-center group cursor-pointer border-2"
                     :class="[
                         matchedIds.includes(item.id) ? 'opacity-0 pointer-events-none' : 'opacity-100',
                         mismatchedIndices.includes(idx)
                             ? 'bg-clay-500 border-clay-500 shadow-clay-500/20'
                             : selectedIndices.includes(idx)
-                                ? 'bg-earth-800 border-earth-800 shadow-earth-800/20'
+                                ? ''
                                 : 'bg-white border-earth-100 hover:shadow-[0_20px_40px_rgba(140,111,74,0.1)]'
-                    ]" @click="handleCardClick(idx)" :initial="{ opacity: 0, scale: 0.8, y: 20 }" :animate="{
+                    ]" :style="selectedIndices.includes(idx) ? {
+                        backgroundColor: activeColor,
+                        borderColor: activeColor,
+                        boxShadow: `0 10px 30px ${activeColor}66`
+                    } : {}" @click="handleCardClick(idx)" :initial="{ opacity: 0, scale: 0.8, y: 20 }" :animate="{
                         opacity: matchedIds.includes(item.id) ? 0 : 1,
                         scale: matchedIds.includes(item.id) ? 0.8 : 1,
                         y: 0,
@@ -161,17 +188,17 @@ onMounted(() => {
                     }">
                     <div v-if="item.type === 'word'">
                         <p class="font-serif font-bold text-lg md:text-xl transition-transform"
-                            :class="mismatchedIndices.includes(idx) || selectedIndices.includes(idx) ? 'text-white scale-110' : 'text-earth-800 group-hover:scale-110'">
+                            :class="mismatchedIndices.includes(idx) ? 'text-white scale-110' : selectedIndices.includes(idx) ? 'text-earth-900 scale-110' : 'text-earth-800 group-hover:scale-110'">
                             {{ item.content }}
                         </p>
                     </div>
                     <div v-else class="flex flex-col items-center gap-1">
                         <p class="font-serif italic text-sm md:text-base leading-tight"
-                            :class="mismatchedIndices.includes(idx) || selectedIndices.includes(idx) ? 'text-earth-100' : 'text-earth-700'">
+                            :class="mismatchedIndices.includes(idx) ? 'text-earth-100' : selectedIndices.includes(idx) ? 'text-earth-800' : 'text-earth-700'">
                             {{ item.content || '...' }}
                         </p>
                         <p v-if="item.pos" class="text-[10px] font-bold uppercase tracking-widest"
-                            :class="mismatchedIndices.includes(idx) || selectedIndices.includes(idx) ? 'text-earth-300' : 'text-earth-400'">
+                            :class="mismatchedIndices.includes(idx) ? 'text-earth-300' : selectedIndices.includes(idx) ? 'text-earth-600' : 'text-earth-400'">
                             ({{ item.pos }})
                         </p>
                     </div>

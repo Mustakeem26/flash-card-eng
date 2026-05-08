@@ -17,6 +17,8 @@ const emit = defineEmits(['close', 'updated'])
 const themeName = ref('')
 const words = ref<{word: string, meaning: string, pos: string}[]>([])
 const isSaving = ref(false)
+const isDeleting = ref(false)
+const showConfirmDelete = ref(false)
 const dragActive = ref(false)
 
 const newWord = reactive({
@@ -128,7 +130,25 @@ async function updateTheme() {
 }
 
 function close() {
+  showConfirmDelete.value = false
   emit('close')
+}
+
+async function deleteTheme() {
+  if (!props.collection) return
+  isDeleting.value = true
+
+  const { error } = await supabase
+    .from('flashcards')
+    .delete()
+    .eq('id', props.collection.id)
+
+  if (!error) {
+    emit('updated', null)
+    emit('close')
+  }
+  isDeleting.value = false
+  showConfirmDelete.value = false
 }
 </script>
 
@@ -261,17 +281,60 @@ function close() {
         </div>
 
         <!-- Footer -->
-        <div class="px-8 py-6 border-t border-earth-100 bg-white flex justify-end gap-4">
-          <button @click="close"
-            class="px-8 py-3 text-earth-500 font-bold text-sm tracking-wide hover:text-earth-800 transition-colors">
-            Cancel
+        <div class="px-8 py-6 border-t border-earth-100 bg-white flex justify-between items-center">
+          <button @click="showConfirmDelete = true"
+            class="flex items-center gap-2 text-clay-400 font-bold text-sm tracking-wide hover:text-clay-600 transition-colors px-2 py-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" />
+            </svg>
+            Delete Collection
           </button>
-          <motion.button :whileHover="{ scale: 1.02 }" :whileTap="{ scale: 0.98 }" @click="updateTheme"
-            :disabled="!themeName || words.length === 0 || isSaving"
-            class="bg-earth-800 text-white font-bold px-10 py-3 rounded-2xl hover:bg-earth-900 transition-colors disabled:opacity-30 disabled:cursor-not-allowed shadow-xl shadow-earth-900/10">
-            {{ isSaving ? 'Updating Collection...' : 'Save Changes' }}
-          </motion.button>
+
+          <div class="flex gap-4">
+            <button @click="close"
+              class="px-8 py-3 text-earth-500 font-bold text-sm tracking-wide hover:text-earth-800 transition-colors">
+              Cancel
+            </button>
+            <motion.button :whileHover="{ scale: 1.02 }" :whileTap="{ scale: 0.98 }" @click="updateTheme"
+              :disabled="!themeName || words.length === 0 || isSaving"
+              class="bg-earth-800 text-white font-bold px-10 py-3 rounded-2xl hover:bg-earth-900 transition-colors disabled:opacity-30 disabled:cursor-not-allowed shadow-xl shadow-earth-900/10">
+              {{ isSaving ? 'Updating Collection...' : 'Save Changes' }}
+            </motion.button>
+          </div>
         </div>
+
+        <!-- Confirm Delete Overlay -->
+        <AnimatePresence>
+          <div v-if="showConfirmDelete" class="absolute inset-0 z-[60] flex items-center justify-center p-6">
+            <motion.div initial="{ opacity: 0 }" animate="{ opacity: 1 }" exit="{ opacity: 0 }"
+              @click="showConfirmDelete = false" class="absolute inset-0 bg-earth-900/60 backdrop-blur-md"></motion.div>
+            <motion.div initial="{ opacity: 0, scale: 0.9, y: 20 }" animate="{ opacity: 1, scale: 1, y: 0 }"
+              exit="{ opacity: 0, scale: 0.9, y: 20 }"
+              class="relative bg-white p-10 rounded-[40px] shadow-2xl max-w-sm w-full text-center border border-earth-100">
+              <div class="w-16 h-16 bg-clay-50 rounded-full flex items-center justify-center mx-auto mb-6 text-clay-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h3 class="text-2xl font-serif text-earth-900 font-bold mb-3">Delete Collection?</h3>
+              <p class="text-earth-500 text-sm mb-10 leading-relaxed">This action cannot be undone. All flashcards in
+                this collection will be permanently removed.</p>
+              <div class="flex flex-col gap-3">
+                <button @click="deleteTheme" :disabled="isDeleting"
+                  class="w-full bg-clay-500 text-white font-bold py-4 rounded-2xl hover:bg-clay-600 transition-all shadow-lg shadow-clay-500/20 disabled:opacity-50">
+                  {{ isDeleting ? 'Deleting...' : 'Yes, Delete Collection' }}
+                </button>
+                <button @click="showConfirmDelete = false" :disabled="isDeleting"
+                  class="w-full bg-earth-50 text-earth-600 font-bold py-4 rounded-2xl hover:bg-earth-100 transition-all">
+                  Cancel
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        </AnimatePresence>
       </motion.div>
     </div>
   </AnimatePresence>
