@@ -254,16 +254,16 @@ function speak(text: string, lang: string, e?: MouseEvent) {
   // Prefer a native high-quality voice for the language
   const voices = window.speechSynthesis.getVoices()
   const langPrefix = lang.substring(0, 2)
-  
+
   let match = null
   if (langPrefix === 'en') {
     // For English, prioritize premium/natural sounding voices
-    match = voices.find(v => v.name === 'Samantha') || 
-            voices.find(v => v.name === 'Google US English') ||
-            voices.find(v => v.name === 'Alex') ||
-            voices.find(v => v.lang.startsWith('en') && v.name.includes('Premium')) ||
-            voices.find(v => v.lang.startsWith('en') && v.localService) ||
-            voices.find(v => v.lang.startsWith('en'))
+    match = voices.find(v => v.name === 'Samantha') ||
+      voices.find(v => v.name === 'Google US English') ||
+      voices.find(v => v.name === 'Alex') ||
+      voices.find(v => v.lang.startsWith('en') && v.name.includes('Premium')) ||
+      voices.find(v => v.lang.startsWith('en') && v.localService) ||
+      voices.find(v => v.lang.startsWith('en'))
   } else {
     match = voices.find((v) => v.lang.startsWith(langPrefix) && v.localService)
       ?? voices.find((v) => v.lang.startsWith(langPrefix))
@@ -323,10 +323,6 @@ function handleThemeUpdated(newTheme: any) {
   }
 }
 
-function goToPopCard() {
-  router.push(`/popcard/${theme.value.id}`)
-}
-
 onMounted(() => {
   getCollection()
   // Pre-load voices (some browsers need this)
@@ -338,7 +334,8 @@ onMounted(() => {
   <div class="min-h-screen bg-earth-100 flex flex-col items-center justify-center p-6 pb-24 overflow-hidden">
     <!-- Navigation Header -->
     <div class="fixed top-0 left-0 right-0 p-8 flex justify-between items-center z-20 pointer-events-none">
-      <motion.button :initial="{ opacity: 0, x: -20 }" :animate="{ opacity: 1, x: 0 }" @click="router.push('/home')"
+      <motion.button :initial="{ opacity: 0, x: -20 }" :animate="{ opacity: 1, x: 0 }"
+        @click="router.push(`/home?tab=flash`)"
         class="flex items-center gap-2 text-earth-500 font-bold text-sm tracking-wide hover:text-earth-800 transition-colors pointer-events-auto">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -353,14 +350,6 @@ onMounted(() => {
           <h1 class="text-earth-900 font-serif text-lg font-bold leading-none">{{ theme.theme_name }}</h1>
           <p class="text-earth-400 text-[10px] font-bold uppercase tracking-widest mt-1">Active Collection</p>
         </div>
-        <button @click="goToPopCard"
-          class="w-10 h-10 rounded-xl bg-white border border-earth-100 text-earth-400 hover:text-earth-800 hover:shadow-md transition-all flex items-center justify-center"
-          title="Pop Card">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-          </svg>
-        </button>
         <button @click="isEditModalOpen = true"
           class="w-10 h-10 rounded-xl bg-white border border-earth-100 text-earth-400 hover:text-earth-800 hover:shadow-md transition-all flex items-center justify-center"
           title="Edit Collection">

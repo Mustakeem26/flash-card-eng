@@ -141,7 +141,7 @@ onMounted(() => {
         <!-- Navigation Header -->
         <div class="fixed top-0 left-0 right-0 p-8 flex justify-between items-center z-20 pointer-events-none">
             <motion.button :initial="{ opacity: 0, x: -20 }" :animate="{ opacity: 1, x: 0 }"
-                @click="router.push(`/flashcard/${route.params.id}`)"
+                @click="router.push('/home?tab=pop')"
                 class="flex items-center gap-2 text-earth-500 font-bold text-sm tracking-wide hover:text-earth-800 transition-colors pointer-events-auto">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -154,7 +154,6 @@ onMounted(() => {
             <div v-if="theme" class="flex items-center gap-6 pointer-events-auto">
                 <div class="text-right">
                     <h1 class="text-earth-900 font-serif text-lg font-bold leading-none">{{ theme.theme_name }}</h1>
-                    <p class="text-earth-400 text-[10px] font-bold uppercase tracking-widest mt-1">Active Collection</p>
                 </div>
             </div>
         </div>
@@ -223,9 +222,9 @@ onMounted(() => {
                     class="w-full bg-earth-800 text-white font-bold py-4 rounded-2xl hover:bg-earth-900 transition-all shadow-xl shadow-earth-800/20">
                     Play Again
                 </button>
-                <button @click="router.push(`/flashcard/${route.params.id}`)"
+                <button @click="router.push('/home?tab=pop')"
                     class="w-full bg-earth-50 text-earth-600 font-bold py-4 rounded-2xl hover:bg-earth-100 transition-all">
-                    Back to Collection
+                    Back to Home
                 </button>
             </div>
         </motion.div>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { supabase } from '@/lib/supabaseClient'
 import { motion } from 'motion-v'
 import ThemeModal from '@/components/ThemeModal.vue'
@@ -9,11 +9,13 @@ import { useHistoryStore } from '@/stores/historyStore'
 import { computed } from 'vue'
 
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 const historyStore = useHistoryStore()
 const themes = ref<any[]>([])
 const isModalOpen = ref(false)
 const loading = ref(true)
+const activeTab = ref(route.query.tab === 'pop' ? 'pop' : 'flash')
 
 const DEFAULT_COLLECTION_ID = 864500091
 
@@ -60,10 +62,10 @@ function goToTheme(id: number) {
   router.push(`/flashcard/${id}`)
 }
 
-function toggleFavorite(event: Event, id: number) {
-  event.stopPropagation()
-  historyStore.toggleFavorite(id)
+function goToPopCard(id: number) {
+  router.push(`/popcard/${id}`)
 }
+
 
 function scrollToGroup(event: Event) {
   const target = event.target as HTMLSelectElement
@@ -79,9 +81,6 @@ function scrollToGroup(event: Event) {
 }
 
 function parseThemeName(name: string) {
-  // Extract base name and trailing digits. 
-  // e.g. "Medical 1" -> base: "Medical", num: 1
-  // e.g. "Vocabulary-02" -> base: "Vocabulary-", num: 2
   const match = name.match(/^(.*?)(?:\s*)?(\d+)$/)
   if (match) {
     const baseStr = match[1] || ''
@@ -94,16 +93,6 @@ function parseThemeName(name: string) {
   return { base: name.trim(), num: 0 }
 }
 
-const favoritedThemes = computed(() => {
-  if (!themes.value.length) return []
-  // Keep order based on favorited order in store
-  const results = []
-  for (const id of historyStore.currentFavorites) {
-    const theme = themes.value.find(t => t.id === id)
-    if (theme) results.push(theme)
-  }
-  return results
-})
 
 const historyThemes = computed(() => {
   if (!themes.value.length) return []
@@ -118,11 +107,6 @@ const historyThemes = computed(() => {
 
 const groupedThemes = computed(() => {
   const result: Record<string, any[]> = {}
-
-  // Exclude favorites from the main grouped list if we want, or keep them.
-  // The prompt says "collection ไหนกดใจไว้ก็จะแสดงบนสุด ตามลำดับ" (Favorites show on top)
-  // Let's exclude them from the normal lists so they aren't duplicated, or keep them? 
-  // Usually better to keep them in normal list, but "pinned" to top. Let's keep them in normal list too.
 
   themes.value.forEach(theme => {
     const themeName = theme.theme_name || ''
@@ -155,13 +139,21 @@ watch(() => authStore.user?.id, (newId, oldId) => {
 onMounted(() => {
   getThemes()
 })
+
+watch(() => route.query.tab, (newTab) => {
+  if (newTab === 'pop') {
+    activeTab.value = 'pop'
+  } else if (newTab === 'flash') {
+    activeTab.value = 'flash'
+  }
+})
 </script>
 
 <template>
   <div class="min-h-screen bg-earth-100 selection:bg-earth-200 pb-20">
     <main class="max-w-5xl mx-auto px-6 pt-12">
       <!-- Call to Action Section -->
-      <section class="mb-16">
+      <section class="mb-4">
         <div
           class="bg-white border border-earth-100 rounded-3xl p-8 md:p-12 shadow-[0_8px_30px_rgba(140,111,74,0.05)] flex flex-col md:flex-row items-center justify-between gap-8">
           <div class="text-center md:text-left">
@@ -180,164 +172,303 @@ onMounted(() => {
           </motion.button>
         </div>
       </section>
-      <!-- Archive Registry/Meta -->
-      <div
-        class="flex flex-col sm:flex-row sm:items-baseline justify-between mb-2 border-b-2 border-earth-100 pb-2 gap-2">
-        <div class="flex items-center gap-4">
-          <h2 class="text-earth-800 font-serif font-bold text-xl">Archive Registry</h2>
-          <Teleport to="#navbar-quick-scroll">
-            <select @change="scrollToGroup" v-if="Object.keys(groupedThemes).length > 0"
-              class="bg-white border border-earth-200 text-earth-700 text-sm rounded-lg focus:ring-earth-500 focus:border-earth-500 block p-1.5 px-3 cursor-pointer hover:bg-earth-50 transition-colors outline-none font-sans w-32 sm:w-auto truncate shadow-sm">
-              <option value="" disabled selected>Quick Scroll</option>
-              <option v-for="key in Object.keys(groupedThemes)" :key="key" :value="key">
-                {{ key }}
-              </option>
-            </select>
-          </Teleport>
-        </div>
-        <span class="text-earth-400 font-sans text-sm font-bold">{{ themes.length }} Collections</span>
-      </div>
-      <div class="h-px w-full bg-gradient-to-r from-earth-300 via-earth-300 to-earth-300 mb-8 opacity-50"></div>
 
-      <!-- Skeleton Loading State -->
-      <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div v-for="i in 6" :key="i"
-          class="bg-white border border-earth-100 rounded-2xl p-6 h-48 animate-pulse flex flex-col pt-8">
-          <div class="w-12 h-1 bg-earth-100 rounded-full mb-4"></div>
-          <div class="w-3/4 h-6 bg-earth-100 rounded-lg mb-2"></div>
-          <div class="w-1/2 h-4 bg-earth-100 rounded-lg"></div>
-          <div class="mt-auto flex justify-between">
-            <div class="w-16 h-2 bg-earth-100 rounded-full"></div>
-            <div class="w-16 h-2 bg-earth-100 rounded-full"></div>
-          </div>
-        </div>
-      </div>
-
-      <div v-else-if="themes.length > 0">
-        <!-- Favorites Section -->
-        <div v-if="favoritedThemes.length > 0" class="mb-12">
-          <div class="flex items-baseline mb-4 gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-500 fill-current" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-            </svg>
-            <h3 class="text-earth-900 font-serif text-xl font-bold">Favorites</h3>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <motion.div v-for="(theme, index) in favoritedThemes" :key="'fav-' + theme.id"
-              :initial="{ opacity: 0, y: 20 }" :animate="{ opacity: 1, y: 0 }"
-              :transition="{ delay: index * 0.08, duration: 0.6, ease: [0.16, 1, 0.3, 1] }" @click="goToTheme(theme.id)"
-              class="group relative cursor-pointer bg-red-50/50 border border-red-100 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(140,111,74,0.08)] hover:-translate-y-1 transition-all duration-500">
-              <button @click="(e) => toggleFavorite(e, theme.id)"
-                class="absolute top-4 right-4 z-8 p-2 text-red-500 hover:scale-110 transition-transform">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 fill-current" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-                </svg>
-              </button>
-              <div class="w-8 h-1 bg-red-300 rounded-full mb-4 group-hover:w-16 transition-all duration-500"></div>
-              <h3 class="text-earth-900 font-serif text-lg font-bold mb-2 pr-8">{{ theme.theme_name }}</h3>
-              <p class="text-earth-500 text-sm font-sans italic">{{ (theme.data ? theme.data.length : 0) }} Terms in
-                Collection</p>
-              <div
-                class="mt-6 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-earth-300">
-                <span></span>
-                <span class="group-hover:text-red-500 transition-colors uppercase">Open Card &rarr;</span>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-
-        <!-- Recent History Section -->
-        <div v-if="historyThemes.length > 0" class="mb-12">
-          <div class="flex items-baseline mb-4 gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-earth-500" fill="none" viewBox="0 0 24 24"
+      <!-- Switch Tab Section -->
+      <div class="flex mb-4">
+        <div
+          class="w-full bg-earth-200/50 p-1.5 rounded-2xl flex items-center gap-1 shadow-inner border border-earth-200/50">
+          <button @click="activeTab = 'flash'" :class="[
+            'flex-1 py-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2',
+            activeTab === 'flash'
+              ? 'bg-white text-earth-900 shadow-md scale-100'
+              : 'text-earth-500 hover:text-earth-700 hover:bg-earth-200/30 scale-95'
+          ]">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            <h3 class="text-earth-900 font-serif text-xl font-bold">Recent Studies</h3>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <motion.div v-for="(theme, index) in historyThemes" :key="'hist-' + theme.id"
-              :initial="{ opacity: 0, y: 20 }" :animate="{ opacity: 1, y: 0 }"
-              :transition="{ delay: index * 0.08, duration: 0.6, ease: [0.16, 1, 0.3, 1] }" @click="goToTheme(theme.id)"
-              class="group relative cursor-pointer bg-earth-50/50 border border-earth-100 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(140,111,74,0.08)] hover:-translate-y-1 transition-all duration-500">
-              <button @click="(e) => toggleFavorite(e, theme.id)"
-                class="absolute top-4 right-4 z-8 p-2 hover:scale-110 transition-transform"
-                :class="historyStore.isFavorite(theme.id) ? 'text-red-500' : 'text-earth-300 hover:text-red-400'">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6"
-                  :fill="historyStore.isFavorite(theme.id) ? 'currentColor' : 'none'" viewBox="0 0 24 24"
-                  stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-              </button>
-              <div class="w-8 h-1 bg-sage-300 rounded-full mb-4 group-hover:w-16 transition-all duration-500"></div>
-              <h3 class="text-earth-900 font-serif text-lg font-bold mb-2 pr-8">{{ theme.theme_name }}</h3>
-              <p class="text-earth-500 text-sm font-sans italic">{{ (theme.data ? theme.data.length : 0) }} Terms in
-                Collection</p>
-              <div
-                class="mt-6 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-earth-300">
-                <span></span>
-                <span class="group-hover:text-sage-600 transition-colors uppercase">Open Card &rarr;</span>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-
-        <!-- Grouped Collections -->
-        <div v-for="(group, groupName) in groupedThemes" :key="groupName" class="mb-12 scroll-mt-12"
-          :id="'group-' + String(groupName).replace(/\s+/g, '-').toLowerCase()">
-          <div class="flex items-baseline mb-4 gap-2">
-            <div class="w-3 h-3 bg-earth-300 rounded-full"></div>
-            <h3 class="text-earth-900 font-serif text-xl font-bold">{{ groupName }}</h3>
-            <span class="text-earth-400 font-sans text-xs font-bold ml-2">{{ group.length }}</span>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <motion.div v-for="(theme, index) in group" :key="theme.id" :initial="{ opacity: 0, y: 20 }"
-              :animate="{ opacity: 1, y: 0 }"
-              :transition="{ delay: index * 0.08, duration: 0.6, ease: [0.16, 1, 0.3, 1] }" @click="goToTheme(theme.id)"
-              class="group relative cursor-pointer bg-white border border-earth-100 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(140,111,74,0.08)] hover:-translate-y-1 transition-all duration-500">
-              <button @click="(e) => toggleFavorite(e, theme.id)"
-                class="absolute top-4 right-4 z-8 p-2 hover:scale-110 transition-transform"
-                :class="historyStore.isFavorite(theme.id) ? 'text-red-500' : 'text-earth-300 hover:text-red-400'">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6"
-                  :fill="historyStore.isFavorite(theme.id) ? 'currentColor' : 'none'" viewBox="0 0 24 24"
-                  stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-              </button>
-              <div class="w-8 h-1 bg-sage-300 rounded-full mb-4 group-hover:w-16 transition-all duration-500"></div>
-              <h3 class="text-earth-900 font-serif text-lg font-bold mb-2 pr-8">{{ theme.theme_name }}</h3>
-              <p class="text-earth-500 text-sm font-sans italic">{{ (theme.data ? theme.data.length : 0) }} Terms in
-                Collection</p>
-              <div
-                class="mt-6 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-earth-300">
-                <span></span>
-                <span class="group-hover:text-sage-600 transition-colors uppercase">Open Card &rarr;</span>
-              </div>
-            </motion.div>
-          </div>
+            Flash Card
+          </button>
+          <button @click="activeTab = 'pop'" :class="[
+            'flex-1 py-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2',
+            activeTab === 'pop'
+              ? 'bg-white text-earth-900 shadow-md scale-100'
+              : 'text-earth-500 hover:text-earth-700 hover:bg-earth-200/30 scale-95'
+          ]">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1-1-1v-6z" />
+            </svg>
+            Pop Card
+          </button>
         </div>
       </div>
 
-      <motion.div v-else initial="{ opacity: 0 }" animate="{ opacity: 1 }"
-        class="bg-earth-100/50 border border-earth-200 border-dashed rounded-3xl p-20 text-center">
-        <div class="mb-4 text-earth-300">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24"
-            stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
-              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5S19.832 5.477 21 6.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-          </svg>
+      <motion.div v-if="activeTab === 'flash'" :initial="{ opacity: 0, y: 10 }" :animate="{ opacity: 1, y: 0 }"
+        :transition="{ duration: 0.4, ease: 'easeOut' }">
+        <!-- Archive Registry/Meta -->
+        <div
+          class="flex flex-col sm:flex-row sm:items-baseline justify-between mb-2 border-b-2 border-earth-100 pb-2 gap-2">
+          <div class="flex items-center gap-4">
+            <h2 class="text-earth-800 font-serif font-bold text-xl">Archive Registry</h2>
+            <Teleport to="#navbar-quick-scroll">
+              <select @change="scrollToGroup" v-if="Object.keys(groupedThemes).length > 0"
+                class="bg-white border border-earth-200 text-earth-700 text-sm rounded-lg focus:ring-earth-500 focus:border-earth-500 block p-1.5 px-3 cursor-pointer hover:bg-earth-50 transition-colors outline-none font-sans w-32 sm:w-auto truncate shadow-sm">
+                <option value="" disabled selected>Quick Scroll</option>
+                <option v-for="key in Object.keys(groupedThemes)" :key="key" :value="key">
+                  {{ key }}
+                </option>
+              </select>
+            </Teleport>
+          </div>
+          <span class="text-earth-400 font-sans text-sm font-bold">{{ themes.length }} Collections</span>
         </div>
-        <p class="text-earth-800 font-serif italic text-lg">The library is currently awaiting new entries.</p>
-        <p class="text-earth-500 text-sm mt-1">Start your educational narrative by adding a collection.</p>
-        <motion.button :whileHover="{ scale: 1.02 }" :whileTap="{ scale: 0.98 }" @click="isModalOpen = true"
-          class="mt-8 bg-earth-800 text-white font-bold px-10 py-3 rounded-2xl hover:bg-earth-900 transition-all font-sans shadow-lg shadow-earth-800/20">
-          Initialize First Collection
-        </motion.button>
+        <div class="h-px w-full bg-gradient-to-r from-earth-300 via-earth-300 to-earth-300 mb-8 opacity-50"></div>
+
+        <!-- Skeleton Loading State (Flash Card) -->
+        <div v-if="loading" class="flex overflow-x-auto gap-6 pb-12 hide-scrollbar">
+          <div v-for="i in 3" :key="'flash-skeleton-' + i" class="flex-none w-80">
+            <div class="flex items-center mb-6 gap-3 border-b-2 border-earth-100 pb-3">
+              <div class="w-8 h-8 bg-earth-50 rounded-lg animate-pulse"></div>
+              <div class="h-5 w-24 bg-earth-100 rounded-md animate-pulse"></div>
+            </div>
+            <div class="flex flex-col gap-4">
+              <div v-for="j in 2" :key="'flash-card-skel-' + j"
+                class="bg-white border border-earth-100 rounded-3xl p-6 h-48 animate-pulse flex flex-col pt-8">
+                <div class="w-12 h-1 bg-earth-100 rounded-full mb-4"></div>
+                <div class="h-6 w-3/4 bg-earth-50 rounded-lg mb-3"></div>
+                <div class="h-4 w-1/2 bg-earth-50 rounded-md mb-6"></div>
+                <div class="mt-auto h-10 w-full bg-earth-50 rounded-xl"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-else-if="themes.length > 0"
+          class="flex overflow-x-auto gap-6 pb-12 snap-x hide-scrollbar custom-scrollbar">
+
+          <!-- Recent Column -->
+          <div v-if="historyThemes.length > 0" class="flex-none w-75 snap-start">
+            <div class="flex items-center mb-6 gap-3 border-b-2 border-earth-100 pb-3">
+              <div class="p-2 bg-earth-50 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-earth-500" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 class="text-earth-900 font-serif text-xl font-bold">Recent Studies</h3>
+            </div>
+            <div class="flex flex-col gap-6">
+              <motion.div v-for="(theme, index) in historyThemes" :key="'hist-' + theme.id"
+                :initial="{ opacity: 0, y: 20 }" :animate="{ opacity: 1, y: 0 }"
+                :transition="{ delay: index * 0.08, duration: 0.6, ease: [0.16, 1, 0.3, 1] }"
+                @click="goToTheme(theme.id)"
+                class="group relative cursor-pointer bg-earth-50/50 border border-earth-100 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(140,111,74,0.08)] hover:-translate-y-1 transition-all duration-500 flex flex-col h-full">
+                <div class="w-8 h-1 bg-sage-300 rounded-full mb-4 group-hover:w-16 transition-all duration-500"></div>
+                <h3 class="text-earth-900 font-serif text-lg font-bold mb-2 pr-8">{{ theme.theme_name }}</h3>
+                <p class="text-earth-500 text-sm font-sans italic">{{ (theme.data ? theme.data.length : 0) }} Terms in
+                  Collection</p>
+                <div
+                  class="mt-6 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-earth-300">
+                  <span></span>
+                  <span class="group-hover:text-sage-600 transition-colors uppercase">Open Card &rarr;</span>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+
+          <!-- Group Columns -->
+          <div v-for="(group, groupName) in groupedThemes" :key="'group-' + groupName"
+            :id="'group-' + String(groupName).replace(/\s+/g, '-').toLowerCase()" class="flex-none w-75 snap-start">
+            <div class="flex items-center mb-6 gap-3 border-b-2 border-earth-100 pb-3">
+              <div class="p-2 bg-earth-50 rounded-lg">
+                <div class="w-3 h-3 bg-earth-300 rounded-full"></div>
+              </div>
+              <h3 class="text-earth-900 font-serif text-xl font-bold truncate">{{ groupName }}</h3>
+              <span class="text-earth-400 font-sans text-xs font-bold ml-auto">{{ group.length }}</span>
+            </div>
+            <div class="flex flex-col gap-6">
+              <motion.div v-for="(theme, index) in group" :key="theme.id" :initial="{ opacity: 0, y: 20 }"
+                :animate="{ opacity: 1, y: 0 }"
+                :transition="{ delay: index * 0.08, duration: 0.6, ease: [0.16, 1, 0.3, 1] }"
+                @click="goToTheme(theme.id)"
+                class="group relative cursor-pointer bg-white border border-earth-100 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(140,111,74,0.08)] hover:-translate-y-1 transition-all duration-500 flex flex-col h-full">
+                <div class="w-8 h-1 bg-sage-300 rounded-full mb-4 group-hover:w-16 transition-all duration-500"></div>
+                <h3 class="text-earth-900 font-serif text-lg font-bold mb-2 pr-8">{{ theme.theme_name }}</h3>
+                <p class="text-earth-500 text-sm font-sans italic">{{ (theme.data ? theme.data.length : 0) }} Terms in
+                  Collection</p>
+                <div
+                  class="mt-6 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-earth-300">
+                  <span></span>
+                  <span class="group-hover:text-sage-600 transition-colors uppercase">Open Card &rarr;</span>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+
+        <motion.div v-else initial="{ opacity: 0 }" animate="{ opacity: 1 }"
+          class="bg-earth-100/50 border border-earth-200 border-dashed rounded-3xl p-20 text-center">
+          <div class="mb-4 text-earth-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5S19.832 5.477 21 6.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </div>
+          <p class="text-earth-800 font-serif italic text-lg">The library is currently awaiting new entries.</p>
+          <p class="text-earth-500 text-sm mt-1">Start your educational narrative by adding a collection.</p>
+          <motion.button :whileHover="{ scale: 1.02 }" :whileTap="{ scale: 0.98 }" @click="isModalOpen = true"
+            class="mt-8 bg-earth-800 text-white font-bold px-10 py-3 rounded-2xl hover:bg-earth-900 transition-all font-sans shadow-lg shadow-earth-800/20">
+            Initialize First Collection
+          </motion.button>
+        </motion.div>
+      </motion.div>
+      <motion.div v-else-if="activeTab === 'pop'" :initial="{ opacity: 0, y: 10 }" :animate="{ opacity: 1, y: 0 }"
+        :transition="{ duration: 0.4, ease: 'easeOut' }">
+        <!-- Archive Registry/Meta -->
+        <div
+          class="flex flex-col sm:flex-row sm:items-baseline justify-between mb-2 border-b-2 border-earth-100 pb-2 gap-2">
+          <div class="flex items-center gap-4">
+            <h2 class="text-earth-800 font-serif font-bold text-xl">Archive Registry</h2>
+            <Teleport to="#navbar-quick-scroll">
+              <select @change="scrollToGroup" v-if="Object.keys(groupedThemes).length > 0"
+                class="bg-white border border-earth-200 text-earth-700 text-sm rounded-lg focus:ring-earth-500 focus:border-earth-500 block p-1.5 px-3 cursor-pointer hover:bg-earth-50 transition-colors outline-none font-sans w-32 sm:w-auto truncate shadow-sm">
+                <option value="" disabled selected>Quick Scroll</option>
+                <option v-for="key in Object.keys(groupedThemes)" :key="key" :value="key">
+                  {{ key }}
+                </option>
+              </select>
+            </Teleport>
+          </div>
+          <span class="text-earth-400 font-sans text-sm font-bold">{{ themes.length }} Collections</span>
+        </div>
+        <div class="h-px w-full bg-gradient-to-r from-earth-300 via-earth-300 to-earth-300 mb-8 opacity-50"></div>
+        <!-- Skeleton Loading State (Pop Card) -->
+        <div v-if="loading" class="flex overflow-x-auto gap-6 pb-12 hide-scrollbar">
+          <div v-for="i in 3" :key="'pop-skeleton-' + i" class="flex-none w-60">
+            <div class="flex items-center mb-6 gap-3 border-b-2 border-earth-100 pb-3">
+              <div class="w-8 h-8 bg-earth-50 rounded-lg animate-pulse"></div>
+              <div class="h-5 w-24 bg-earth-100 rounded-md animate-pulse"></div>
+            </div>
+            <div class="flex flex-col gap-3">
+              <div v-for="j in 4" :key="'pop-card-skel-' + j"
+                class="flex items-center justify-between bg-white border border-earth-100 rounded-2xl p-4 animate-pulse">
+                <div class="flex items-center gap-4">
+                  <div class="w-10 h-10 bg-earth-50 rounded-xl"></div>
+                  <div>
+                    <div class="h-4 w-24 bg-earth-100 rounded mb-2"></div>
+                    <div class="h-2 w-12 bg-earth-50 rounded"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-else-if="themes.length > 0"
+          class="flex overflow-x-auto gap-6 pb-12 snap-x hide-scrollbar custom-scrollbar">
+
+          <!-- Recent History Column (Pop Card) -->
+          <div v-if="historyThemes.length > 0" class="flex-none w-60 snap-start">
+            <div class="flex items-center mb-6 gap-3 border-b-2 border-earth-100 pb-3">
+              <div class="p-2 bg-earth-50 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-earth-500" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 class="text-earth-900 font-serif text-xl font-bold">Recent</h3>
+            </div>
+            <div class="flex flex-col gap-3">
+              <motion.div v-for="(theme, index) in historyThemes" :key="'pop-hist-' + theme.id"
+                :initial="{ opacity: 0, y: 10 }" :animate="{ opacity: 1, y: 0 }"
+                :transition="{ delay: index * 0.05, duration: 0.4 }" @click="goToPopCard(theme.id)"
+                class="group flex items-center justify-between bg-white border border-earth-100 rounded-2xl p-4 hover:shadow-md hover:border-earth-200 transition-all cursor-pointer">
+                <div class="flex items-center gap-4">
+                  <div
+                    class="w-10 h-10 bg-earth-50 rounded-xl flex items-center justify-center text-earth-400 group-hover:bg-earth-100 group-hover:text-earth-600 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div class="max-w-[140px]">
+                    <h4 class="text-earth-900 font-bold text-sm leading-tight truncate">{{ theme.theme_name }}</h4>
+                    <p class="text-earth-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">{{ (theme.data ?
+                      theme.data.length : 0) }} Words</p>
+                  </div>
+                </div>
+                <div class="text-earth-200 group-hover:text-earth-600 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+
+          <!-- Group Columns (Pop Card) -->
+          <div v-for="(group, groupName) in groupedThemes" :key="'pop-group-' + groupName"
+            class="flex-none w-60 snap-start">
+            <div class="flex items-center mb-6 gap-3 border-b-2 border-earth-100 pb-3">
+              <div class="p-2 bg-earth-50 rounded-lg">
+                <div class="w-3 h-3 bg-earth-300 rounded-full"></div>
+              </div>
+              <h3 class="text-earth-900 font-serif text-xl font-bold truncate">{{ groupName }}</h3>
+              <span class="text-earth-400 font-sans text-xs font-bold ml-auto">{{ group.length }}</span>
+            </div>
+
+            <div class="flex flex-col gap-3">
+              <motion.div v-for="(theme, index) in group" :key="'pop-card-' + theme.id" :initial="{ opacity: 0, y: 10 }"
+                :animate="{ opacity: 1, y: 0 }" :transition="{ delay: index * 0.05, duration: 0.4 }"
+                @click="goToPopCard(theme.id)"
+                class="group flex items-center justify-between bg-white border border-earth-100 rounded-2xl p-4 hover:shadow-md hover:border-earth-200 transition-all cursor-pointer">
+                <div class="flex items-center gap-4">
+                  <div
+                    class="w-10 h-10 bg-earth-50 rounded-xl flex items-center justify-center text-earth-400 group-hover:bg-earth-100 group-hover:text-earth-600 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 011-1h1a2 2 0 100-4H7a1 1 0 01-1-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+                    </svg>
+                  </div>
+                  <div class="max-w-[140px]">
+                    <h4 class="text-earth-900 font-bold text-sm leading-tight truncate">{{ theme.theme_name }}</h4>
+                    <p class="text-earth-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">{{ (theme.data ?
+                      theme.data.length : 0) }} Words</p>
+                  </div>
+                </div>
+                <div class="text-earth-200 group-hover:text-earth-600 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+
+        <motion.div v-else initial="{ opacity: 0 }" animate="{ opacity: 1 }"
+          class="bg-earth-100/50 border border-earth-200 border-dashed rounded-3xl p-20 text-center">
+          <div class="mb-4 text-earth-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5S19.832 5.477 21 6.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </div>
+          <p class="text-earth-800 font-serif italic text-lg">The library is currently awaiting new entries.</p>
+          <p class="text-earth-500 text-sm mt-1">Start your educational narrative by adding a collection for Pop Card
+            challenges.</p>
+        </motion.div>
       </motion.div>
     </main>
 
@@ -348,5 +479,31 @@ onMounted(() => {
 <style scoped>
 [id^="group-"] {
   scroll-margin-top: 20vh;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
 }
 </style>
