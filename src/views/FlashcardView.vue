@@ -382,7 +382,7 @@ onMounted(() => {
             <div
               class="absolute inset-0 backface-hidden bg-white border border-earth-200 rounded-3xl p-12 flex flex-col items-center justify-center text-center shadow-[0_20px_50px_rgba(140,111,74,0.1)]">
               <!-- Top Accent -->
-              <div class="absolute top-12 left-1/2 -translate-x-1/2 w-12 h-1 bg-sage-300 rounded-full"></div>
+              <div class="absolute top-12 left-1/2 -translate-x-1/2 w-12 h-1 bg-clay-300 rounded-full"></div>
 
               <!-- Little Share Button -->
               <button @click.stop="prepareShare" v-show="!isFlipped"
@@ -514,7 +514,7 @@ onMounted(() => {
 
         <div class="flex gap-1">
           <div v-for="idx in visibleDots" :key="idx" class="h-1.5 rounded-full transition-all duration-300"
-            :class="idx === currentIndex ? 'bg-earth-800 w-4' : 'bg-earth-200 w-1.5'"></div>
+            :class="idx === currentIndex ? 'bg-clay-400 w-4' : 'bg-clay-100 w-1.5'"></div>
         </div>
 
         <motion.button :disabled="currentIndex === words.length - 1" :whileHover="{ x: 4 }" @click="nextWord"
@@ -575,7 +575,7 @@ onMounted(() => {
         <!-- Front Side (Visual) -->
         <div
           class="w-full bg-white border-2 border-earth-200 rounded-[60px] p-24 flex flex-col items-center justify-center text-center shadow-[0_40px_100px_rgba(140,111,74,0.15)] overflow-hidden relative">
-          <div class="absolute top-0 left-0 w-full h-4 bg-sage-400"></div>
+          <div class="absolute top-0 left-0 w-full h-4 bg-clay-300"></div>
           <p class="text-earth-400 text-xl font-bold uppercase tracking-[0.3em] mb-12">English Word</p>
           <h2 class="text-9xl font-serif text-earth-900 font-bold leading-tight mb-8">{{ currentWord.word }}</h2>
           <div v-if="currentWord.pos"
@@ -710,11 +710,11 @@ onMounted(() => {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #e5e7eb;
+  background: #ccdcd3;
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #d1d5db;
+  background: #a3c1b1;
 }
 </style>

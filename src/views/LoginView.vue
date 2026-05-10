@@ -26,9 +26,9 @@ const handleSubmit = async () => {
 <template>
   <div class="min-h-screen flex items-center justify-center p-6 bg-earth-100 selection:bg-earth-200">
     <!-- Decorative elements -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none opacity-20">
-      <div class="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full bg-clay-200 blur-3xl"></div>
-      <div class="absolute bottom-[10%] right-[10%] w-[30%] h-[30%] rounded-full bg-sage-200 blur-3xl"></div>
+    <div class="fixed inset-0 overflow-hidden pointer-events-none opacity-30">
+      <div class="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] rounded-full bg-clay-300 blur-3xl"></div>
+      <div class="absolute bottom-[10%] right-[10%] w-[40%] h-[40%] rounded-full bg-sage-200 blur-3xl"></div>
     </div>
 
     <motion.div
@@ -78,7 +78,7 @@ const handleSubmit = async () => {
         </div>
 
         <motion.button
-          :whileHover="{ scale: 1.01, backgroundColor: '#8c6f4a' }"
+          :whileHover="{ scale: 1.01, backgroundColor: '#4a5715' }"
           :whileTap="{ scale: 0.98 }"
           type="submit" 
           :disabled="authStore.loading"
@@ -94,7 +94,7 @@ const handleSubmit = async () => {
           {{ isSignUp ? 'Already a member?' : "New here?" }}
           <button 
             @click="isSignUp = !isSignUp" 
-            class="text-earth-800 font-bold ml-1 hover:text-clay-600 underline decoration-earth-300 underline-offset-4 transition-colors"
+            class="text-clay-600 font-bold ml-1 hover:text-clay-800 underline decoration-clay-300 underline-offset-4 transition-colors"
           >
             {{ isSignUp ? 'Sign In' : 'Sign Up Free' }}
           </button>

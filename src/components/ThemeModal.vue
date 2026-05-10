@@ -281,11 +281,11 @@ function resetAndClose() {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #e5e7eb;
+  background: #ccdcd3;
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #d1d5db;
+  background: #a3c1b1;
 }
 </style>

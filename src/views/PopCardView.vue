@@ -4,6 +4,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabaseClient'
 import { motion } from 'motion-v'
 
+import { playPopSound, playMatchSound, playErrorSound, playSuccessSound } from '@/lib/audio'
+
 const route = useRoute()
 const router = useRouter()
 const theme = ref<any>(null)
@@ -40,6 +42,7 @@ function initGame() {
 
     if (remaining.length === 0) {
         isGameFinished.value = true
+        playSuccessSound()
         return
     }
 
@@ -68,6 +71,8 @@ function handleCardClick(idx: number) {
     const card = gameCards.value[idx]
     if (matchedIds.value.includes(card.id)) return
 
+    playPopSound()
+
     // Pick new color every 2 clicks (start of a pair)
     if (clickCount.value % 2 === 0) {
         pickRandomColor()
@@ -92,6 +97,7 @@ function handleCardClick(idx: number) {
 
         if (c1.id === c2.id && c1.type !== c2.type) {
             // Match!
+            playMatchSound()
             setTimeout(() => {
                 matchedIds.value.push(c1.id)
                 selectedIndices.value = []
@@ -107,6 +113,7 @@ function handleCardClick(idx: number) {
             }, 200)
         } else {
             // No match - show error color then reset
+            playErrorSound()
             mismatchedIndices.value = [...selectedIndices.value]
             setTimeout(() => {
                 mismatchedIndices.value = []
@@ -137,7 +144,7 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-earth-100 flex flex-col items-center justify-center p-6 pb-24 overflow-hidden">
+    <div class="min-h-screen bg-clay-50/50 flex flex-col items-center justify-center p-6 pb-24 overflow-hidden">
         <!-- Navigation Header -->
         <div class="fixed top-0 left-0 right-0 p-8 flex justify-between items-center z-20 pointer-events-none">
             <motion.button :initial="{ opacity: 0, x: -20 }" :animate="{ opacity: 1, x: 0 }"

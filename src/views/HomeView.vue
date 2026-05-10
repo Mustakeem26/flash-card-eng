@@ -155,7 +155,7 @@ watch(() => route.query.tab, (newTab) => {
       <!-- Call to Action Section -->
       <section class="mb-4">
         <div
-          class="bg-white border border-earth-100 rounded-3xl p-8 md:p-12 shadow-[0_8px_30px_rgba(140,111,74,0.05)] flex flex-col md:flex-row items-center justify-between gap-8">
+          class="bg-clay-50/50 border border-clay-100 rounded-3xl p-8 md:p-12 shadow-[0_8px_30px_rgba(255,182,183,0.1)] flex flex-col md:flex-row items-center justify-between gap-8">
           <div class="text-center md:text-left">
             <h2 class="text-3xl font-serif text-earth-900 font-bold mb-2">Build Your Knowledge</h2>
             <p class="text-earth-500 font-sans italic max-w-md">Initialize a new collection by manual entry or batch
@@ -163,7 +163,7 @@ watch(() => route.query.tab, (newTab) => {
           </div>
 
           <motion.button :whileHover="{ scale: 1.02, y: -2 }" :whileTap="{ scale: 0.98 }" @click="isModalOpen = true"
-            class="bg-earth-900 text-white font-bold px-10 py-4 rounded-2xl hover:bg-earth-950 transition-all shadow-xl shadow-earth-900/20 flex items-center gap-3 whitespace-nowrap">
+            class="bg-clay-300 text-white font-bold px-10 py-4 rounded-2xl hover:bg-clay-400 transition-all shadow-xl shadow-clay-300/20 flex items-center gap-3 whitespace-nowrap">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
@@ -176,12 +176,12 @@ watch(() => route.query.tab, (newTab) => {
       <!-- Switch Tab Section -->
       <div class="flex mb-4">
         <div
-          class="w-full bg-earth-200/50 p-1.5 rounded-2xl flex items-center gap-1 shadow-inner border border-earth-200/50">
+          class="w-full bg-clay-100/50 p-1.5 rounded-2xl flex items-center gap-1 shadow-inner border border-clay-200/50">
           <button @click="activeTab = 'flash'" :class="[
             'flex-1 py-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2',
             activeTab === 'flash'
               ? 'bg-white text-earth-900 shadow-md scale-100'
-              : 'text-earth-500 hover:text-earth-700 hover:bg-earth-200/30 scale-95'
+              : 'text-earth-500 hover:text-clay-600 hover:bg-clay-200/30 scale-95'
           ]">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
@@ -194,7 +194,7 @@ watch(() => route.query.tab, (newTab) => {
             'flex-1 py-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2',
             activeTab === 'pop'
               ? 'bg-white text-earth-900 shadow-md scale-100'
-              : 'text-earth-500 hover:text-earth-700 hover:bg-earth-200/30 scale-95'
+              : 'text-earth-500 hover:text-clay-600 hover:bg-clay-200/30 scale-95'
           ]">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
@@ -210,7 +210,7 @@ watch(() => route.query.tab, (newTab) => {
         :transition="{ duration: 0.4, ease: 'easeOut' }">
         <!-- Archive Registry/Meta -->
         <div
-          class="flex flex-col sm:flex-row sm:items-baseline justify-between mb-2 border-b-2 border-earth-100 pb-2 gap-2">
+          class="flex flex-col sm:flex-row sm:items-baseline justify-between mb-2 border-b-2 border-clay-200 pb-2 gap-2">
           <div class="flex items-center gap-4">
             <h2 class="text-earth-800 font-serif font-bold text-xl">Archive Registry</h2>
             <Teleport to="#navbar-quick-scroll">
@@ -251,9 +251,9 @@ watch(() => route.query.tab, (newTab) => {
 
           <!-- Recent Column -->
           <div v-if="historyThemes.length > 0" class="flex-none w-75 snap-start">
-            <div class="flex items-center mb-6 gap-3 border-b-2 border-earth-100 pb-3">
-              <div class="p-2 bg-earth-50 rounded-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-earth-500" fill="none" viewBox="0 0 24 24"
+            <div class="flex items-center mb-6 gap-3 border-b-2 border-clay-200 pb-3">
+              <div class="p-2 bg-clay-50 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-clay-400" fill="none" viewBox="0 0 24 24"
                   stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -266,15 +266,15 @@ watch(() => route.query.tab, (newTab) => {
                 :initial="{ opacity: 0, y: 20 }" :animate="{ opacity: 1, y: 0 }"
                 :transition="{ delay: index * 0.08, duration: 0.6, ease: [0.16, 1, 0.3, 1] }"
                 @click="goToTheme(theme.id)"
-                class="group relative cursor-pointer bg-earth-50/50 border border-earth-100 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(140,111,74,0.08)] hover:-translate-y-1 transition-all duration-500 flex flex-col h-full">
-                <div class="w-8 h-1 bg-sage-300 rounded-full mb-4 group-hover:w-16 transition-all duration-500"></div>
-                <h3 class="text-earth-900 font-serif text-lg font-bold mb-2 pr-8">{{ theme.theme_name }}</h3>
+                class="group relative cursor-pointer bg-clay-50/50 border border-clay-100 rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(255,182,183,0.12)] hover:-translate-y-1 transition-all duration-500 flex flex-col h-full">
+                <div class="w-8 h-1 bg-clay-300 rounded-full mb-3 group-hover:w-16 transition-all duration-500"></div>
+                <h3 class="text-earth-900 font-serif text-lg font-bold mb-1 pr-8">{{ theme.theme_name }}</h3>
                 <p class="text-earth-500 text-sm font-sans italic">{{ (theme.data ? theme.data.length : 0) }} Terms in
                   Collection</p>
                 <div
-                  class="mt-6 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-earth-300">
+                  class="mt-4 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-earth-300">
                   <span></span>
-                  <span class="group-hover:text-sage-600 transition-colors uppercase">Open Card &rarr;</span>
+                  <span class="group-hover:text-clay-600 transition-colors uppercase">Open Card &rarr;</span>
                 </div>
               </motion.div>
             </div>
@@ -295,15 +295,15 @@ watch(() => route.query.tab, (newTab) => {
                 :animate="{ opacity: 1, y: 0 }"
                 :transition="{ delay: index * 0.08, duration: 0.6, ease: [0.16, 1, 0.3, 1] }"
                 @click="goToTheme(theme.id)"
-                class="group relative cursor-pointer bg-white border border-earth-100 rounded-2xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(140,111,74,0.08)] hover:-translate-y-1 transition-all duration-500 flex flex-col h-full">
-                <div class="w-8 h-1 bg-sage-300 rounded-full mb-4 group-hover:w-16 transition-all duration-500"></div>
-                <h3 class="text-earth-900 font-serif text-lg font-bold mb-2 pr-8">{{ theme.theme_name }}</h3>
+                class="group relative cursor-pointer bg-white border border-earth-100 rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(140,111,74,0.08)] hover:-translate-y-1 transition-all duration-500 flex flex-col h-full">
+                <div class="w-8 h-1 bg-sage-300 rounded-full mb-3 group-hover:w-16 transition-all duration-500"></div>
+                <h3 class="text-earth-900 font-serif text-lg font-bold mb-1 pr-8">{{ theme.theme_name }}</h3>
                 <p class="text-earth-500 text-sm font-sans italic">{{ (theme.data ? theme.data.length : 0) }} Terms in
                   Collection</p>
                 <div
-                  class="mt-6 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-earth-300">
+                  class="mt-4 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-earth-300">
                   <span></span>
-                  <span class="group-hover:text-sage-600 transition-colors uppercase">Open Card &rarr;</span>
+                  <span class="group-hover:text-clay-600 transition-colors uppercase">Open Card &rarr;</span>
                 </div>
               </motion.div>
             </div>
@@ -374,7 +374,7 @@ watch(() => route.query.tab, (newTab) => {
 
           <!-- Recent History Column (Pop Card) -->
           <div v-if="historyThemes.length > 0" class="flex-none w-60 snap-start">
-            <div class="flex items-center mb-6 gap-3 border-b-2 border-earth-100 pb-3">
+            <div class="flex items-center mb-6 gap-3 border-b-1 border-earth-100 pb-2">
               <div class="p-2 bg-earth-50 rounded-lg">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-earth-500" fill="none" viewBox="0 0 24 24"
                   stroke="currentColor">
@@ -419,7 +419,7 @@ watch(() => route.query.tab, (newTab) => {
             class="flex-none w-60 snap-start">
             <div class="flex items-center mb-6 gap-3 border-b-2 border-earth-100 pb-3">
               <div class="p-2 bg-earth-50 rounded-lg">
-                <div class="w-3 h-3 bg-earth-300 rounded-full"></div>
+                <div class="w-5 h-5 bg-earth-300 rounded-full"></div>
               </div>
               <h3 class="text-earth-900 font-serif text-xl font-bold truncate">{{ groupName }}</h3>
               <span class="text-earth-400 font-sans text-xs font-bold ml-auto">{{ group.length }}</span>
@@ -499,11 +499,11 @@ watch(() => route.query.tab, (newTab) => {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #e5e7eb;
+  background: #ccdcd3;
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #d1d5db;
+  background: #a3c1b1;
 }
 </style>
