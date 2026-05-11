@@ -1,42 +1,71 @@
-@import url('https://fonts.googleapis.com/css2?family=Varela+Round&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Varela+Round&display=swap");
 @import "tailwindcss";
 
 @theme {
-  --color-earth-50: #fbfdef;
-  --color-earth-100: #f2fac0;
-  --color-earth-200: #e8f49a;
-  --color-earth-300: #daec6b;
-  --color-earth-400: #c9e044;
-  --color-earth-500: #b0c92f;
-  --color-earth-600: #8ba223;
-  --color-earth-700: #6a7c1b;
-  --color-earth-800: #4a5715;
-  --color-earth-900: #1a1f08;
-  --color-earth-950: #0d0f04;
+  /* Summer Pastel Theme - Sunny Yellow */
+  --color-sunny-50: #fffbeb;
+  --color-sunny-100: #fef3c7;
+  --color-sunny-200: #fde68a;
+  --color-sunny-300: #fcd34d;
+  --color-sunny-400: #fbbf24;
+  --color-sunny-500: #f59e0b;
+  --color-sunny-600: #d97706;
+  --color-sunny-700: #b45309;
+  --color-sunny-800: #92400e;
+  --color-sunny-900: #78350f;
+  --color-sunny-950: #451a03;
 
-  --color-clay-50: #fff7f7;
-  --color-clay-100: #ffeded;
-  --color-clay-200: #ffd6d7;
-  --color-clay-300: #ffb6b7;
-  --color-clay-400: #ff8b8d;
-  --color-clay-500: #ff6063;
-  --color-clay-600: #ed3d41;
-  --color-clay-700: #c7292d;
-  --color-clay-800: #9e2023;
-  --color-clay-900: #7d1c1e;
-  --color-clay-950: #4a0d0e;
+  /* Summer Pastel Theme - Coral Pink */
+  --color-coral-50: #fff1f2;
+  --color-coral-100: #ffe4e6;
+  --color-coral-200: #fecdd3;
+  --color-coral-300: #fda4af;
+  --color-coral-400: #fb7185;
+  --color-coral-500: #f43f5e;
+  --color-coral-600: #e11d48;
+  --color-coral-700: #be123c;
+  --color-coral-800: #9f1239;
+  --color-coral-900: #881337;
+  --color-coral-950: #4c0519;
 
-  --color-sage-50: #f2f6f4;
-  --color-sage-100: #e5ede9;
-  --color-sage-200: #ccdcd3;
-  --color-sage-300: #a3c1b1;
-  --color-sage-400: #76a18b;
-  --color-sage-500: #5d8d73;
-  --color-sage-600: #4a715c;
-  --color-sage-700: #3b5a4a;
-  --color-sage-800: #2d4538;
-  --color-sage-900: #23372d;
-  --color-sage-950: #15211b;
+  /* Summer Pastel Theme - Mint Green */
+  --color-mint-50: #ecfdf5;
+  --color-mint-100: #d1fae5;
+  --color-mint-200: #a7f3d0;
+  --color-mint-300: #6ee7b7;
+  --color-mint-400: #34d399;
+  --color-mint-500: #10b981;
+  --color-mint-600: #059669;
+  --color-mint-700: #047857;
+  --color-mint-800: #065f46;
+  --color-mint-900: #064e3b;
+  --color-mint-950: #022c22;
+
+  /* Summer Pastel Theme - Sky Blue */
+  --color-sky-50: #f0f9ff;
+  --color-sky-100: #e0f2fe;
+  --color-sky-200: #bae6fd;
+  --color-sky-300: #7dd3fc;
+  --color-sky-400: #38bdf8;
+  --color-sky-500: #0ea5e9;
+  --color-sky-600: #0284c7;
+  --color-sky-700: #0369a1;
+  --color-sky-800: #075985;
+  --color-sky-900: #0c4a6e;
+  --color-sky-950: #082f49;
+
+  /* Summer Pastel Theme - Lavender Purple */
+  --color-lavender-50: #faf5ff;
+  --color-lavender-100: #f3e8ff;
+  --color-lavender-200: #e9d5ff;
+  --color-lavender-300: #d8b4fe;
+  --color-lavender-400: #c084fc;
+  --color-lavender-500: #a855f7;
+  --color-lavender-600: #9333ea;
+  --color-lavender-700: #7e22ce;
+  --color-lavender-800: #6b21a8;
+  --color-lavender-900: #581c87;
+  --color-lavender-950: #3b0764;
 
   --font-serif: "VAG Rounded", "Varela Round", sans-serif;
   --font-sans: "VAG Rounded", "Varela Round", sans-serif;
@@ -44,10 +73,15 @@
 
 @layer base {
   body {
-    @apply bg-earth-50 text-earth-900 font-sans antialiased;
+    @apply bg-sunny-50 text-sky-900 font-sans antialiased;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-serif;
   }
 }

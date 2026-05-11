@@ -1,121 +1,146 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { useRouter } from 'vue-router'
-import { motion } from 'motion-v'
+import { motion, AnimatePresence } from 'motion-v'
 
+const authStore = useAuthStore()
+const isSignUp = ref(false)
 const email = ref('')
 const password = ref('')
-const isSignUp = ref(false)
-const authStore = useAuthStore()
-const router = useRouter()
 
-const handleSubmit = async () => {
+function handleSubmit() {
   if (isSignUp.value) {
-    await authStore.signUp(email.value, password.value)
+    authStore.signUp(email.value, password.value)
   } else {
-    await authStore.signIn(email.value, password.value)
+    authStore.signIn(email.value, password.value)
   }
-  
-  if (!authStore.error) {
-    router.push('/home')
-  }
+}
+
+function resetAndClose() {
+  email.value = ''
+  password.value = ''
+  isSignUp.value = false
 }
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center p-6 bg-earth-100 selection:bg-earth-200">
+  <div class="min-h-screen flex items-center justify-center p-6 bg-sunny-100 selection:bg-sunny-200">
     <!-- Decorative elements -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none opacity-30">
-      <div class="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] rounded-full bg-clay-300 blur-3xl"></div>
-      <div class="absolute bottom-[10%] right-[10%] w-[40%] h-[40%] rounded-full bg-sage-200 blur-3xl"></div>
+      <div class="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] rounded-full bg-coral-300 blur-3xl"></div>
+      <div class="absolute bottom-[10%] right-[10%] w-[40%] h-[40%] rounded-full bg-mint-200 blur-3xl"></div>
     </div>
 
-    <motion.div
-      :initial="{ opacity: 0, y: 30, scale: 0.98 }"
-      :animate="{ opacity: 1, y: 0, scale: 1 }"
+    <motion.div :initial="{ opacity: 0, y: 20 }" :animate="{ opacity: 1, y: 0 }"
       :transition="{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }"
-      class="relative w-full max-w-md bg-white border border-earth-200 rounded-3xl p-8 md:p-12 shadow-[0_20px_50px_rgba(140,111,74,0.1)]"
-    >
+      class="relative w-full max-w-md bg-white border border-sunny-200 rounded-3xl p-8 md:p-12 shadow-[0_20px_50px_rgba(253,214,137,0.1)]">
       <div class="text-center mb-10">
-        <h1 class="text-4xl font-serif text-earth-900 mb-3 tracking-tight">
+        <h1 class="text-4xl font-serif text-sunny-900 mb-3 tracking-tight">
           {{ isSignUp ? 'Signup' : 'Flashly Box' }}
         </h1>
-        <p class="text-earth-600 font-sans font-medium opacity-80 decoration-earth-300 underline underline-offset-4">
+        <p class="text-sunny-600 font-sans font-medium opacity-80 decoration-sunny-300 underline underline-offset-4">
           {{ isSignUp ? 'Create your account' : 'Login to your account' }}
         </p>
       </div>
 
       <form @submit.prevent="handleSubmit" class="space-y-6">
-        <div class="space-y-1.5 focus-within:text-earth-700 transition-colors">
-          <label for="email" class="block text-sm font-semibold text-earth-800 ml-1">Username or Email</label>
-          <input 
-            type="email" 
-            id="email" 
-            v-model="email" 
-            placeholder="flashlybox@example.com" 
-            required
-            :disabled="authStore.loading"
-            class="w-full bg-earth-50 border-earth-200 border rounded-2xl px-5 py-4 text-earth-900 placeholder:text-earth-400 focus:outline-none focus:ring-4 focus:ring-earth-100 focus:border-earth-400 transition-all duration-300 disabled:opacity-50"
-          >
+        <div class="space-y-1.5 focus-within:text-sunny-700 transition-colors">
+          <label for="email" class="block text-sm font-semibold text-sunny-800 ml-1">Username or Email</label>
+          <input id="email" v-model="email" type="text" :disabled="authStore.loading" placeholder="your@email.com"
+            class="w-full bg-sunny-50 border-sunny-200 border rounded-2xl px-5 py-4 text-sunny-900 placeholder:text-sunny-400 focus:outline-none focus:ring-4 focus:ring-sunny-100 focus:border-sunny-400 transition-all duration-300 disabled:opacity-50">
         </div>
 
-        <div class="space-y-1.5 focus-within:text-earth-700 transition-colors">
-          <label for="password" class="block text-sm font-semibold text-earth-800 ml-1">Password</label>
-          <input 
-            type="password" 
-            id="password" 
-            v-model="password" 
-            placeholder="••••••••" 
-            required
-            :disabled="authStore.loading"
-            class="w-full bg-earth-50 border-earth-200 border rounded-2xl px-5 py-4 text-earth-900 placeholder:text-earth-400 focus:outline-none focus:ring-4 focus:ring-earth-100 focus:border-earth-400 transition-all duration-300 disabled:opacity-50"
-          >
+        <div class="space-y-1.5 focus-within:text-sunny-700 transition-colors">
+          <label for="password" class="block text-sm font-semibold text-sunny-800 ml-1">Password</label>
+          <input id="password" v-model="password" type="password" :disabled="authStore.loading" placeholder="••••••••"
+            class="w-full bg-sunny-50 border-sunny-200 border rounded-2xl px-5 py-4 text-sunny-900 placeholder:text-sunny-400 focus:outline-none focus:ring-4 focus:ring-sunny-100 focus:border-sunny-400 transition-all duration-300 disabled:opacity-50">
         </div>
 
-        <div v-if="authStore.error" class="bg-clay-50 border border-clay-200 text-clay-700 px-4 py-3 rounded-2xl text-sm font-medium animate-shake">
+        <div v-if="authStore.error"
+          class="bg-coral-50 border border-coral-200 text-coral-700 px-4 py-3 rounded-2xl text-sm font-medium animate-shake">
           {{ authStore.error }}
         </div>
 
-        <motion.button
-          :whileHover="{ scale: 1.01, backgroundColor: '#4a5715' }"
-          :whileTap="{ scale: 0.98 }"
-          type="submit" 
-          :disabled="authStore.loading"
-          class="w-full bg-earth-800 text-white rounded-2xl py-4 font-bold text-lg shadow-lg shadow-earth-900/10 hover:shadow-xl hover:shadow-earth-900/20 active:shadow-inner transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed"
-        >
-          <span v-if="authStore.loading" class="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-          <span>{{ isSignUp ? 'Register' : 'Login' }}</span>
-        </motion.button>
+        <button type="submit" :disabled="authStore.loading"
+          class="w-full bg-sunny-800 text-white rounded-2xl py-4 font-bold text-lg shadow-lg shadow-sunny-900/10 hover:shadow-xl hover:shadow-sunny-900/20 active:shadow-inner transition-all duration-300 flex items-center justify-center gap-3 disabled:opacity-70 disabled:cursor-not-allowed">
+          <span>{{ isSignUp ? 'Create Account' : 'Login' }}</span>
+          <svg v-if="authStore.loading" class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none"
+            viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+            </path>
+          </svg>
+        </button>
       </form>
 
       <div class="mt-12 text-center">
-        <p class="text-earth-600 text-sm font-medium">
+        <p class="text-sunny-600 text-sm font-medium">
           {{ isSignUp ? 'Already a member?' : "New here?" }}
-          <button 
-            @click="isSignUp = !isSignUp" 
-            class="text-clay-600 font-bold ml-1 hover:text-clay-800 underline decoration-clay-300 underline-offset-4 transition-colors"
-          >
-            {{ isSignUp ? 'Sign In' : 'Sign Up Free' }}
+          <button type="button" @click="isSignUp = !isSignUp"
+            class="text-coral-600 font-bold ml-1 hover:text-coral-800 underline decoration-coral-300 underline-offset-4 transition-colors">
+            {{ isSignUp ? 'Login' : 'Create account' }}
           </button>
         </p>
       </div>
     </motion.div>
 
     <!-- Visual footer note -->
-    <div class="fixed bottom-6 text-earth-400 text-xs font-serif italic uppercase tracking-widest">
+    <div class="fixed bottom-6 text-sunny-400 text-xs font-serif italic uppercase tracking-widest">
       © Flashly Box 2026 v.1.0.3
     </div>
+
+    <AnimatePresence>
+      <motion.div initial="{ opacity: 0 }" animate="{ opacity: 1 }" exit="{ opacity: 0 }" @click="resetAndClose"
+        v-if="authStore.user"
+        class="fixed inset-0 bg-sunny-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+        <motion.div :initial="{ scale: 0.9, opacity: 0 }" :animate="{ scale: 1, opacity: 1 }"
+          exit="{ scale: 0.9, opacity: 0 }"
+          class="bg-white border border-sunny-200 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
+          <div class="w-16 h-16 bg-mint-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-mint-600" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h2 class="text-2xl font-serif text-sunny-900 font-bold mb-3">Welcome Back!</h2>
+          <p class="text-sunny-500 mb-8">You've successfully logged in.</p>
+          <button @click="resetAndClose"
+            class="w-full bg-sunny-800 text-white font-bold py-3 rounded-xl hover:bg-sunny-900 transition-colors">
+            Continue to App
+          </button>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   </div>
 </template>
 
 <style scoped>
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
-}
 .animate-shake {
-  animation: shake 0.4s ease-in-out;
+  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+@keyframes shake {
+
+  10%,
+  90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+
+  20%,
+  80% {
+    transform: translate3d(2px, 0, 0);
+  }
+
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+
+  40%,
+  60% {
+    transform: translate3d(4px, 0, 0);
+  }
 }
 </style>

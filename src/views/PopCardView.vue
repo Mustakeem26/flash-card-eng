@@ -144,12 +144,12 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-clay-50/50 flex flex-col items-center justify-center p-6 pb-24 overflow-hidden">
+    <div class="min-h-screen bg-sunny-100 flex flex-col items-center justify-center p-6 pb-24 overflow-hidden">
         <!-- Navigation Header -->
         <div class="fixed top-0 left-0 right-0 p-8 flex justify-between items-center z-20 pointer-events-none">
             <motion.button :initial="{ opacity: 0, x: -20 }" :animate="{ opacity: 1, x: 0 }"
                 @click="router.push('/home?tab=pop')"
-                class="flex items-center gap-2 text-earth-500 font-bold text-sm tracking-wide hover:text-earth-800 transition-colors pointer-events-auto">
+                class="flex items-center gap-2 text-sunny-500 font-bold text-sm tracking-wide hover:text-sunny-800 transition-colors pointer-events-auto">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="19" y1="12" x2="5" y2="12" />
@@ -160,7 +160,7 @@ onMounted(() => {
 
             <div v-if="theme" class="flex items-center gap-6 pointer-events-auto">
                 <div class="text-right">
-                    <h1 class="text-earth-900 font-serif text-lg font-bold leading-none">{{ theme.theme_name }}</h1>
+                    <h1 class="text-sunny-900 font-serif text-lg font-bold leading-none">{{ theme.theme_name }}</h1>
                 </div>
             </div>
         </div>
@@ -169,14 +169,14 @@ onMounted(() => {
             class="w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-16 lg:px-48 py-12">
             <div class="grid grid-cols-3 md:grid-cols-4 gap-1">
                 <motion.div v-for="(item, idx) in gameCards" :key="idx"
-                    class="aspect-square rounded-md shadow-[0_10px_30px_rgba(140,111,74,0.05)] transition-all flex items-center justify-center p-4 text-center group cursor-pointer border-2"
+                    class="aspect-square rounded-md shadow-[0_10px_30px_rgba(253,214,137,0.05)] transition-all flex items-center justify-center p-4 text-center group cursor-pointer border-2"
                     :class="[
                         matchedIds.includes(item.id) ? 'opacity-0 pointer-events-none' : 'opacity-100',
                         mismatchedIndices.includes(idx)
-                            ? 'bg-clay-500 border-clay-500 shadow-clay-500/20'
+                            ? 'bg-coral-500 border-coral-500 shadow-coral-500/20'
                             : selectedIndices.includes(idx)
                                 ? ''
-                                : 'bg-white border-earth-100 hover:shadow-[0_20px_40px_rgba(140,111,74,0.1)]'
+                                : 'bg-white border-sunny-100 hover:shadow-[0_20px_40px_rgba(253,214,137,0.1)]'
                     ]" :style="selectedIndices.includes(idx) ? {
                         backgroundColor: activeColor,
                         borderColor: activeColor,
@@ -194,17 +194,17 @@ onMounted(() => {
                     }">
                     <div v-if="item.type === 'word'">
                         <p class="font-serif font-bold text-lg md:text-xl transition-transform"
-                            :class="mismatchedIndices.includes(idx) ? 'text-white scale-110' : selectedIndices.includes(idx) ? 'text-earth-900 scale-110' : 'text-earth-800 group-hover:scale-110'">
+                            :class="mismatchedIndices.includes(idx) ? 'text-white scale-110' : selectedIndices.includes(idx) ? 'text-sunny-900 scale-110' : 'text-sunny-800 group-hover:scale-110'">
                             {{ item.content }}
                         </p>
                     </div>
                     <div v-else class="flex flex-col items-center gap-1">
                         <p class="font-serif italic text-sm md:text-base leading-tight"
-                            :class="mismatchedIndices.includes(idx) ? 'text-earth-100' : selectedIndices.includes(idx) ? 'text-earth-800' : 'text-earth-700'">
+                            :class="mismatchedIndices.includes(idx) ? 'text-sunny-100' : selectedIndices.includes(idx) ? 'text-sunny-800' : 'text-sunny-700'">
                             {{ item.content || '...' }}
                         </p>
                         <p v-if="item.pos" class="text-[10px] font-bold uppercase tracking-widest"
-                            :class="mismatchedIndices.includes(idx) ? 'text-earth-300' : selectedIndices.includes(idx) ? 'text-earth-600' : 'text-earth-400'">
+                            :class="mismatchedIndices.includes(idx) ? 'text-sunny-300' : selectedIndices.includes(idx) ? 'text-sunny-600' : 'text-sunny-400'">
                             ({{ item.pos }})
                         </p>
                     </div>
@@ -214,23 +214,23 @@ onMounted(() => {
 
         <!-- Success Message -->
         <motion.div v-if="isGameFinished" initial="{ opacity: 0, scale: 0.9 }" animate="{ opacity: 1, scale: 1 }"
-            class="text-center p-12 bg-white rounded-[40px] shadow-2xl border border-earth-100 max-w-lg mx-auto z-30">
-            <div class="w-20 h-20 bg-sage-100 rounded-full flex items-center justify-center mx-auto mb-8">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-sage-600" fill="none" viewBox="0 0 24 24"
+            class="text-center p-12 bg-white rounded-[40px] shadow-2xl border border-sunny-100 max-w-lg mx-auto z-30">
+            <div class="w-20 h-20 bg-mint-100 rounded-full flex items-center justify-center mx-auto mb-8">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-mint-600" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
                 </svg>
             </div>
-            <h2 class="text-4xl font-serif text-earth-900 font-bold mb-4 italic">Success!</h2>
-            <p class="text-earth-500 mb-10 leading-relaxed">Wonderful! You've mastered all the words in this collection.
+            <h2 class="text-4xl font-serif text-sunny-900 font-bold mb-4 italic">Success!</h2>
+            <p class="text-sunny-500 mb-10 leading-relaxed">Wonderful! You've mastered all the words in this collection.
                 Keep up the great work!</p>
             <div class="flex flex-col gap-4">
                 <button @click="resetGame"
-                    class="w-full bg-earth-800 text-white font-bold py-4 rounded-2xl hover:bg-earth-900 transition-all shadow-xl shadow-earth-800/20">
+                    class="w-full bg-sunny-800 text-white font-bold py-4 rounded-2xl hover:bg-sunny-900 transition-all shadow-xl shadow-sunny-800/20">
                     Play Again
                 </button>
                 <button @click="router.push('/home?tab=pop')"
-                    class="w-full bg-earth-50 text-earth-600 font-bold py-4 rounded-2xl hover:bg-earth-100 transition-all">
+                    class="w-full bg-sunny-50 text-sunny-600 font-bold py-4 rounded-2xl hover:bg-sunny-100 transition-all">
                     Back to Home
                 </button>
             </div>
