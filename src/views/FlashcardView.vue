@@ -331,12 +331,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-sunny-100 flex flex-col items-center justify-center p-6 pb-24 overflow-hidden">
+  <div class="min-h-screen bg-sky-50 flex flex-col items-center justify-center p-6 pb-24 overflow-hidden">
     <!-- Navigation Header -->
     <div class="fixed top-0 left-0 right-0 p-8 flex justify-between items-center z-20 pointer-events-none">
       <motion.button :initial="{ opacity: 0, x: -20 }" :animate="{ opacity: 1, x: 0 }"
         @click="router.push(`/home?tab=flash`)"
-        class="flex items-center gap-2 text-sunny-500 font-bold text-sm tracking-wide hover:text-sunny-800 transition-colors pointer-events-auto">
+        class="flex items-center gap-2 text-coral-500 font-bold text-sm tracking-wide hover:text-sunny-800 transition-colors pointer-events-auto">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"
           stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="19" y1="12" x2="5" y2="12" />
@@ -348,10 +348,9 @@ onMounted(() => {
       <div v-if="theme" class="flex items-center gap-6 pointer-events-auto">
         <div class="text-right">
           <h1 class="text-sunny-900 font-serif text-lg font-bold leading-none">{{ theme.theme_name }}</h1>
-          <p class="text-sunny-400 text-[10px] font-bold uppercase tracking-widest mt-1">Active Collection</p>
         </div>
         <button @click="isEditModalOpen = true"
-          class="w-10 h-10 rounded-xl bg-white border border-sunny-100 text-sunny-400 hover:text-sunny-800 hover:shadow-md transition-all flex items-center justify-center"
+          class="w-10 h-10 rounded-xl bg-white border border-coral-200 text-coral-400 hover:text-coral-800 hover:shadow-md transition-all flex items-center justify-center"
           title="Edit Collection">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -380,13 +379,13 @@ onMounted(() => {
             @click="handleCardClick">
             <!-- Front of Card -->
             <div
-              class="absolute inset-0 backface-hidden bg-white border border-sunny-200 rounded-3xl p-12 flex flex-col items-center justify-center text-center shadow-[0_20px_50px_rgba(253,214,137,0.1)]">
+              class="absolute inset-0 backface-hidden bg-white border border-coral-200 rounded-3xl p-12 flex flex-col items-center justify-center text-center shadow-[0_20px_50px_rgba(253,214,137,0.1)]">
               <!-- Top Accent -->
               <div class="absolute top-12 left-1/2 -translate-x-1/2 w-12 h-1 bg-coral-300 rounded-full"></div>
 
               <!-- Little Share Button -->
               <button @click.stop="prepareShare" v-show="!isFlipped"
-                class="absolute top-8 right-8 p-2 rounded-xl bg-sunny-50 text-sunny-400 hover:text-sunny-800 hover:bg-sunny-100 transition-all z-10"
+                class="absolute top-8 right-8 p-2 rounded-xl bg-coral-50 text-coral-400 hover:text-coral-800 hover:bg-coral-100 transition-all z-10"
                 title="Export to Story">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -401,9 +400,9 @@ onMounted(() => {
                 <div class="flex items-center justify-center gap-3 mb-8">
                   <h2 class="text-4xl font-serif text-sunny-900 font-bold leading-tight">{{ currentWord.word }}</h2>
                   <button @click="speak(currentWord.word, 'en-US', $event)"
-                    class="relative flex-shrink-0 w-9 h-9 rounded-full bg-sunny-100 hover:bg-sunny-200 flex items-center justify-center text-sunny-500 hover:text-sunny-800 transition-all"
+                    class="relative flex-shrink-0 w-9 h-9 rounded-full bg-coral-100 hover:bg-coral-200 flex items-center justify-center text-coral-500 hover:text-coral-800 transition-all"
                     title="Read in english">
-                    <span v-if="isSpeaking" class="absolute inset-0 rounded-full bg-sunny-300/40 animate-ping"></span>
+                    <span v-if="isSpeaking" class="absolute inset-0 rounded-full bg-coral-300/40 animate-ping"></span>
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                       <path
                         d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
@@ -414,22 +413,22 @@ onMounted(() => {
 
               <!-- Footer Insight -->
               <p
-                class="absolute bottom-14 left-1/2 -translate-x-1/2 w-full text-sunny-300 text-[10px] font-bold uppercase tracking-[0.2em]">
+                class="absolute bottom-14 left-1/2 -translate-x-1/2 w-full text-coral-300 text-[10px] font-bold uppercase tracking-[0.2em]">
                 Tap to reveal</p>
               <p
-                class="absolute bottom-10 left-1/2 -translate-x-1/2 w-full text-sunny-300 text-[9px] font-bold uppercase tracking-[0.2em]">
+                class="absolute bottom-10 left-1/2 -translate-x-1/2 w-full text-coral-300 text-[9px] font-bold uppercase tracking-[0.2em]">
                 Card {{ currentIndex + 1 }} of {{ words.length }}</p>
             </div>
 
             <!-- Back of Card -->
             <div
-              class="absolute inset-0 backface-hidden bg-sunny-900 border border-sunny-800 rounded-3xl p-10 flex flex-col items-center justify-center text-center shadow-[0_20px_50px_rgba(0,0,0,0.2)] [transform:rotateY(180deg)]">
+              class="absolute inset-0 backface-hidden bg-mint-900 border border-mint-900 rounded-3xl p-10 flex flex-col items-center justify-center text-center shadow-[0_20px_50px_rgba(0,0,0,0.2)] [transform:rotateY(180deg)]">
               <!-- Top Accent -->
-              <div class="absolute top-10 left-1/2 -translate-x-1/2 w-12 h-1 bg-coral-400 rounded-full"></div>
+              <div class="absolute top-10 left-1/2 -translate-x-1/2 w-12 h-1 bg-coral-200 rounded-full"></div>
 
               <!-- Little Share Button -->
               <button @click.stop="prepareShare" v-show="isFlipped"
-                class="absolute top-8 right-8 p-2 rounded-xl bg-sunny-800 text-sunny-500 hover:text-sunny-200 hover:bg-sunny-700 transition-all z-10"
+                class="absolute top-8 right-8 p-2 rounded-xl bg-coral-50 text-coral-400 hover:text-coral-800 hover:bg-coral-100 transition-all z-10"
                 title="Export to Story">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -442,26 +441,26 @@ onMounted(() => {
               <div class="flex-1 flex flex-col justify-center w-full space-y-4">
                 <!-- POS -->
                 <div v-if="currentWord.pos">
-                  <p class="text-sunny-500 sm:text-[9px] text-[7px] font-bold uppercase tracking-widest mb-3">Part of
+                  <p class="text-coral-200 sm:text-[9px] text-[7px] font-bold uppercase tracking-widest mb-3">Part of
                     Speech</p>
                   <div
-                    class="inline-block px-4 py-1.5 bg-sunny-50 border border-sunny-700 rounded-full sm:text-[10px] text-[8px] text-sunny-600 font-bold uppercase tracking-widest">
+                    class="inline-block px-4 py-1.5 bg-coral-100 border border-coral-300 rounded-full sm:text-[10px] text-[8px] text-coral-500 font-bold uppercase tracking-widest">
                     {{ currentWord.pos }}
                   </div>
                 </div>
 
                 <div>
-                  <p class="text-sunny-400 sm:text-[9px] text-[7px] font-bold uppercase tracking-widest mb-2">Meaning
+                  <p class="text-coral-200 sm:text-[9px] text-[7px] font-bold uppercase tracking-widest mb-2">Meaning
                   </p>
                   <!-- Thai meaning + speaker -->
                   <div class="flex items-center justify-center gap-3">
-                    <p class="text-sunny-50 font-serif italic sm:text-2xl text-1xl leading-relaxed">
+                    <p class="text-coral-50 font-serif italic sm:text-2xl text-1xl leading-relaxed">
                       {{ currentWord.meaning || 'Pending Explanation...' }}
                     </p>
                     <button v-if="currentWord.meaning" @click="speak(currentWord.meaning, 'th-TH', $event)"
-                      class="relative flex-shrink-0 w-9 h-9 rounded-full bg-sunny-700 hover:bg-sunny-600 flex items-center justify-center text-sunny-300 hover:text-sunny-50 transition-all"
+                      class="relative flex-shrink-0 w-9 h-9 rounded-full bg-coral-50 hover:bg-coral-300 flex items-center justify-center text-coral-300 hover:text-coral-50 transition-all"
                       title="อ่านภาษาไทย">
-                      <span v-if="isSpeaking" class="absolute inset-0 rounded-full bg-sunny-400/30 animate-ping"></span>
+                      <span v-if="isSpeaking" class="absolute inset-0 rounded-full bg-coral-400/30 animate-ping"></span>
                       <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                         <path
                           d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
@@ -471,20 +470,20 @@ onMounted(() => {
                 </div>
 
                 <div v-if="currentWord.example">
-                  <p class="text-sunny-500 sm:text-[9px] text-[7px] font-bold uppercase tracking-widest mb-2">Example
+                  <p class="text-coral-200 sm:text-[9px] text-[7px] font-bold uppercase tracking-widest mb-2">Example
                   </p>
-                  <p class="text-sunny-200 font-sans text-sm italic leading-relaxed px-2">
+                  <p class="text-coral-50 font-sans text-sm italic leading-relaxed px-2">
                     "{{ currentWord.example }}"
                   </p>
                 </div>
 
                 <!-- Synonyms -->
                 <div v-if="currentWord.synonyms && currentWord.synonyms.length > 0">
-                  <p class="text-sunny-500 sm:text-[9px] text-[7px] font-bold uppercase tracking-widest mb-3">Synonyms
+                  <p class="text-coral-200 sm:text-[9px] text-[7px] font-bold uppercase tracking-widest mb-3">Synonyms
                   </p>
                   <div class="flex flex-wrap gap-2 justify-center">
                     <button v-for="syn in currentWord.synonyms" :key="syn" @click.stop="speak(syn, 'en-US', $event)"
-                      class="flex items-center gap-1.5 px-3 py-1 bg-sunny-50 border border-sunny-700 rounded-full text-[11px] text-sunny-600 font-bold italic tracking-wide hover:bg-sunny-700 hover:text-sunny-100 transition-all">
+                      class="flex items-center gap-1.5 px-3 py-1 bg-coral-50 border border-coral-300 rounded-full text-[11px] text-coral-600 font-bold italic tracking-wide hover:bg-coral-300 hover:text-coral-800 transition-all">
                       {{ syn }}
                       <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 opacity-60" viewBox="0 0 24 24"
                         fill="currentColor">
@@ -498,7 +497,7 @@ onMounted(() => {
 
               <!-- Footer Progress -->
               <p
-                class="absolute bottom-10 left-1/2 -translate-x-1/2 w-full text-sunny-600 text-[9px] font-bold uppercase tracking-[0.2em]">
+                class="absolute bottom-10 left-1/2 -translate-x-1/2 w-full text-coral-200 text-[9px] font-bold uppercase tracking-[0.2em]">
                 Card {{ currentIndex + 1 }} of {{ words.length }}</p>
             </div>
           </motion.div>
@@ -508,7 +507,7 @@ onMounted(() => {
       <!-- Bottom Navigation -->
       <div class="mt-12 flex items-center justify-between w-full">
         <motion.button :disabled="currentIndex === 0" :whileHover="{ x: -4 }" @click="prevWord"
-          class="flex items-center gap-2 text-sunny-400 font-bold text-xs uppercase tracking-widest disabled:opacity-0 transition-opacity">
+          class="flex items-center gap-2 text-coral-400 font-bold text-xs uppercase tracking-widest disabled:opacity-0 transition-opacity">
           &larr; Previous
         </motion.button>
 
@@ -518,7 +517,7 @@ onMounted(() => {
         </div>
 
         <motion.button :disabled="currentIndex === words.length - 1" :whileHover="{ x: 4 }" @click="nextWord"
-          class="flex items-center gap-2 text-sunny-400 font-bold text-xs uppercase tracking-widest disabled:opacity-0 transition-opacity">
+          class="flex items-center gap-2 text-coral-400 font-bold text-xs uppercase tracking-widest disabled:opacity-0 transition-opacity">
           Next &rarr;
         </motion.button>
       </div>

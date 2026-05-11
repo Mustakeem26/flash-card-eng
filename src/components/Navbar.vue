@@ -42,12 +42,12 @@ function closeMenu() {
       <!-- Logo -->
       <div class="flex items-center gap-5">
         <div
-          class="w-18 h-14 bg-sunny-800 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-sunny-700/50 shadow-md">
+          class="w-18 h-14 bg-coral-600 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-coral-500/50 shadow-md">
           <img :src="logo" alt="Flashly Box Logo" class="w-full h-full object-cover" />
         </div>
         <div>
-          <h1 class="text-[28px] font-serif text-sunny-900 tracking-tight leading-none">Flashly Box</h1>
-          <p class="text-sunny-500 text-[11px] font-sans font-semibold tracking-widest uppercase mt-1.5">Collections</p>
+          <h1 class="text-[28px] font-serif text-coral-600 tracking-tight leading-none">Flashy Box</h1>
+          <p class="text-coral-300 text-[11px] font-sans font-semibold tracking-widest uppercase mt-1.5">Collections</p>
         </div>
       </div>
 

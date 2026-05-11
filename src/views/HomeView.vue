@@ -150,15 +150,15 @@ watch(() => route.query.tab, (newTab) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-sunny-100 selection:bg-sunny-200 pb-20">
+  <div class="min-h-screen bg-sky-50 selection:bg-sky-100 pb-20">
     <main class="max-w-5xl mx-auto px-6 pt-12">
       <!-- Call to Action Section -->
       <section class="mb-4">
         <div
-          class="bg-coral-50/50 border border-coral-100 rounded-3xl p-8 md:p-12 shadow-[0_8px_30px_rgba(255,165,173,0.1)] flex flex-col md:flex-row items-center justify-between gap-8">
+          class="bg-white border border-coral-300 rounded-3xl p-8 md:p-12 shadow-[0_8px_30px_rgba(255,165,173,0.1)] flex flex-col md:flex-row items-center justify-between gap-8">
           <div class="text-center md:text-left">
             <h2 class="text-3xl font-serif text-sunny-900 font-bold mb-2">Build Your Knowledge</h2>
-            <p class="text-sunny-500 font-sans italic max-w-md">Initialize a new collection by manual entry or batch
+            <p class="text-coral-300 font-sans italic max-w-md">Initialize a new collection by manual entry or batch
               import from spreadsheet files.</p>
           </div>
 
@@ -176,12 +176,12 @@ watch(() => route.query.tab, (newTab) => {
       <!-- Switch Tab Section -->
       <div class="flex mb-4">
         <div
-          class="w-full bg-coral-100/50 p-1.5 rounded-2xl flex items-center gap-1 shadow-inner border border-coral-200/50">
+          class="w-full bg-coral-200 p-1.5 rounded-2xl flex items-center gap-1 shadow-inner border border-coral-200/50">
           <button @click="activeTab = 'flash'" :class="[
             'flex-1 py-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2',
             activeTab === 'flash'
-              ? 'bg-white text-sunny-900 shadow-md scale-100'
-              : 'text-sunny-500 hover:text-coral-600 hover:bg-coral-200/30 scale-95'
+              ? 'bg-white text-coral-600 shadow-md scale-100'
+              : 'text-coral-400 hover:text-coral-600 hover:bg-coral-200/30 scale-95'
           ]">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
@@ -193,8 +193,8 @@ watch(() => route.query.tab, (newTab) => {
           <button @click="activeTab = 'pop'" :class="[
             'flex-1 py-3 rounded-xl font-bold transition-all duration-300 flex items-center justify-center gap-2',
             activeTab === 'pop'
-              ? 'bg-white text-sunny-900 shadow-md scale-100'
-              : 'text-sunny-500 hover:text-coral-600 hover:bg-coral-200/30 scale-95'
+              ? 'bg-white text-coral-600 shadow-md scale-100'
+              : 'text-coral-400 hover:text-coral-600 hover:bg-coral-200/30 scale-95'
           ]">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
@@ -215,7 +215,7 @@ watch(() => route.query.tab, (newTab) => {
             <h2 class="text-sunny-800 font-serif font-bold text-xl">Archive Registry</h2>
             <Teleport to="#navbar-quick-scroll">
               <select @change="scrollToGroup" v-if="Object.keys(groupedThemes).length > 0"
-                class="bg-white border border-sunny-200 text-sunny-700 text-sm rounded-lg focus:ring-sunny-500 focus:border-sunny-500 block p-1.5 px-3 cursor-pointer hover:bg-sunny-50 transition-colors outline-none font-sans w-32 sm:w-auto truncate shadow-sm">
+                class="bg-white border border-coral-200 text-coral-600 text-sm rounded-lg focus:ring-coral-500 focus:border-coral-500 block p-1.5 px-3 cursor-pointer hover:bg-coral-50 transition-colors outline-none font-sans w-32 sm:w-auto truncate shadow-sm">
                 <option value="" disabled selected>Quick Scroll</option>
                 <option v-for="key in Object.keys(groupedThemes)" :key="key" :value="key">
                   {{ key }}
@@ -223,24 +223,24 @@ watch(() => route.query.tab, (newTab) => {
               </select>
             </Teleport>
           </div>
-          <span class="text-sunny-400 font-sans text-sm font-bold">{{ themes.length }} Collections</span>
+          <span class="text-sunny-800 font-sans text-sm font-bold">{{ themes.length }} Collections</span>
         </div>
-        <div class="h-px w-full bg-gradient-to-r from-sunny-300 via-sunny-300 to-sunny-300 mb-8 opacity-50"></div>
+        <div class="h-px w-full mb-8 opacity-50"></div>
 
         <!-- Skeleton Loading State (Flash Card) -->
         <div v-if="loading" class="flex overflow-x-auto gap-6 pb-12 hide-scrollbar">
           <div v-for="i in 3" :key="'flash-skeleton-' + i" class="flex-none w-80">
-            <div class="flex items-center mb-6 gap-3 border-b-2 border-sunny-100 pb-3">
-              <div class="w-8 h-8 bg-sunny-50 rounded-lg animate-pulse"></div>
-              <div class="h-5 w-24 bg-sunny-100 rounded-md animate-pulse"></div>
+            <div class="flex items-center mb-6 gap-3 border-b-2 border-coral-100 pb-3">
+              <div class="w-8 h-8 bg-coral-50 rounded-lg animate-pulse"></div>
+              <div class="h-5 w-24 bg-coral-100 rounded-md animate-pulse"></div>
             </div>
             <div class="flex flex-col gap-4">
               <div v-for="j in 2" :key="'flash-card-skel-' + j"
-                class="bg-white border border-sunny-100 rounded-3xl p-6 h-48 animate-pulse flex flex-col pt-8">
-                <div class="w-12 h-1 bg-sunny-100 rounded-full mb-4"></div>
-                <div class="h-6 w-3/4 bg-sunny-50 rounded-lg mb-3"></div>
-                <div class="h-4 w-1/2 bg-sunny-50 rounded-md mb-6"></div>
-                <div class="mt-auto h-10 w-full bg-sunny-50 rounded-xl"></div>
+                class="bg-white border border-coral-100 rounded-3xl p-6 h-48 animate-pulse flex flex-col pt-8">
+                <div class="w-12 h-1 bg-coral-100 rounded-full mb-4"></div>
+                <div class="h-6 w-3/4 bg-coral-50 rounded-lg mb-3"></div>
+                <div class="h-4 w-1/2 bg-coral-50 rounded-md mb-6"></div>
+                <div class="mt-auto h-10 w-full bg-coral-50 rounded-xl"></div>
               </div>
             </div>
           </div>
@@ -266,13 +266,13 @@ watch(() => route.query.tab, (newTab) => {
                 :initial="{ opacity: 0, y: 20 }" :animate="{ opacity: 1, y: 0 }"
                 :transition="{ delay: index * 0.08, duration: 0.6, ease: [0.16, 1, 0.3, 1] }"
                 @click="goToTheme(theme.id)"
-                class="group relative cursor-pointer bg-coral-50/50 border border-coral-100 rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(255,165,173,0.12)] hover:-translate-y-1 transition-all duration-500 flex flex-col h-full">
+                class="group relative cursor-pointer bg-white border border-coral-200 rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(255,165,173,0.12)] hover:-translate-y-1 transition-all duration-500 flex flex-col h-full">
                 <div class="w-8 h-1 bg-coral-300 rounded-full mb-3 group-hover:w-16 transition-all duration-500"></div>
                 <h3 class="text-sunny-900 font-serif text-lg font-bold mb-1 pr-8">{{ theme.theme_name }}</h3>
-                <p class="text-sunny-500 text-sm font-sans italic">{{ (theme.data ? theme.data.length : 0) }} Terms in
+                <p class="text-sunny-900 text-sm font-sans italic">{{ (theme.data ? theme.data.length : 0) }} Terms in
                   Collection</p>
                 <div
-                  class="mt-4 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-sunny-300">
+                  class="mt-4 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-coral-300">
                   <span></span>
                   <span class="group-hover:text-coral-600 transition-colors uppercase">Open Card &rarr;</span>
                 </div>
@@ -283,25 +283,25 @@ watch(() => route.query.tab, (newTab) => {
           <!-- Group Columns -->
           <div v-for="(group, groupName) in groupedThemes" :key="'group-' + groupName"
             :id="'group-' + String(groupName).replace(/\s+/g, '-').toLowerCase()" class="flex-none w-75 snap-start">
-            <div class="flex items-center mb-6 gap-3 border-b-2 border-sunny-100 pb-3">
-              <div class="p-2 bg-sunny-50 rounded-lg">
-                <div class="w-5 h-5 bg-mint-300 rounded-full"></div>
+            <div class="flex items-center mb-6 gap-3 border-b-2 border-coral-200 pb-3">
+              <div class="p-2 bg-coral-50 rounded-lg">
+                <div class="w-5 h-5 bg-coral-200 rounded-full"></div>
               </div>
               <h3 class="text-sunny-900 font-serif text-xl font-bold truncate">{{ groupName }}</h3>
-              <span class="text-sunny-400 font-sans text-xs font-bold ml-auto">{{ group.length }}</span>
+              <span class="text-coral-400 font-sans text-xs font-bold ml-auto">{{ group.length }}</span>
             </div>
             <div class="flex flex-col gap-6">
               <motion.div v-for="(theme, index) in group" :key="theme.id" :initial="{ opacity: 0, y: 20 }"
                 :animate="{ opacity: 1, y: 0 }"
                 :transition="{ delay: index * 0.08, duration: 0.6, ease: [0.16, 1, 0.3, 1] }"
                 @click="goToTheme(theme.id)"
-                class="group relative cursor-pointer bg-white border border-sunny-100 rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(253,214,137,0.08)] hover:-translate-y-1 transition-all duration-500 flex flex-col h-full">
-                <div class="w-8 h-1 bg-mint-300 rounded-full mb-3 group-hover:w-16 transition-all duration-500"></div>
+                class="group relative cursor-pointer bg-white border border-coral-200 rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(253,214,137,0.08)] hover:-translate-y-1 transition-all duration-500 flex flex-col h-full">
+                <div class="w-8 h-1 bg-coral-300 rounded-full mb-3 group-hover:w-16 transition-all duration-500"></div>
                 <h3 class="text-sunny-900 font-serif text-lg font-bold mb-1 pr-8">{{ theme.theme_name }}</h3>
-                <p class="text-sunny-500 text-sm font-sans italic">{{ (theme.data ? theme.data.length : 0) }} Terms in
+                <p class="text-sunny-900 text-sm font-sans italic">{{ (theme.data ? theme.data.length : 0) }} Terms in
                   Collection</p>
                 <div
-                  class="mt-4 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-sunny-300">
+                  class="mt-4 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-coral-300">
                   <span></span>
                   <span class="group-hover:text-coral-600 transition-colors uppercase">Open Card &rarr;</span>
                 </div>
@@ -331,12 +331,12 @@ watch(() => route.query.tab, (newTab) => {
         :transition="{ duration: 0.4, ease: 'easeOut' }">
         <!-- Archive Registry/Meta -->
         <div
-          class="flex flex-col sm:flex-row sm:items-baseline justify-between mb-2 border-b-2 border-sunny-100 pb-2 gap-2">
+          class="flex flex-col sm:flex-row sm:items-baseline justify-between mb-2 border-b-2 border-coral-200 pb-2 gap-2">
           <div class="flex items-center gap-4">
             <h2 class="text-sunny-800 font-serif font-bold text-xl">Archive Registry</h2>
             <Teleport to="#navbar-quick-scroll">
               <select @change="scrollToGroup" v-if="Object.keys(groupedThemes).length > 0"
-                class="bg-white border border-sunny-200 text-sunny-700 text-sm rounded-lg focus:ring-sunny-500 focus:border-sunny-500 block p-1.5 px-3 cursor-pointer hover:bg-sunny-50 transition-colors outline-none font-sans w-32 sm:w-auto truncate shadow-sm">
+                class="bg-white border border-coral-200 text-coral-600 text-sm rounded-lg focus:ring-coral-500 focus:border-coral-500 block p-1.5 px-3 cursor-pointer hover:bg-coral-50 transition-colors outline-none font-sans w-32 sm:w-auto truncate shadow-sm">
                 <option value="" disabled selected>Quick Scroll</option>
                 <option v-for="key in Object.keys(groupedThemes)" :key="key" :value="key">
                   {{ key }}
@@ -344,24 +344,24 @@ watch(() => route.query.tab, (newTab) => {
               </select>
             </Teleport>
           </div>
-          <span class="text-sunny-400 font-sans text-sm font-bold">{{ themes.length }} Collections</span>
+          <span class="text-sunny-800 font-sans text-sm font-bold">{{ themes.length }} Collections</span>
         </div>
-        <div class="h-px w-full bg-gradient-to-r from-sunny-300 via-sunny-300 to-sunny-300 mb-8 opacity-50"></div>
+        <div class="h-px w-full mb-8 opacity-50"></div>
         <!-- Skeleton Loading State (Pop Card) -->
         <div v-if="loading" class="flex overflow-x-auto gap-6 pb-12 hide-scrollbar">
           <div v-for="i in 3" :key="'pop-skeleton-' + i" class="flex-none w-60">
-            <div class="flex items-center mb-6 gap-3 border-b-2 border-sunny-100 pb-3">
-              <div class="w-8 h-8 bg-sunny-50 rounded-lg animate-pulse"></div>
-              <div class="h-5 w-24 bg-sunny-100 rounded-md animate-pulse"></div>
+            <div class="flex items-center mb-6 gap-3 border-b-2 border-coral-100 pb-3">
+              <div class="w-8 h-8 bg-coral-50 rounded-lg animate-pulse"></div>
+              <div class="h-5 w-24 bg-coral-100 rounded-md animate-pulse"></div>
             </div>
             <div class="flex flex-col gap-3">
               <div v-for="j in 4" :key="'pop-card-skel-' + j"
-                class="flex items-center justify-between bg-white border border-sunny-100 rounded-2xl p-4 animate-pulse">
+                class="flex items-center justify-between bg-white border border-coral-100 rounded-2xl p-4 animate-pulse">
                 <div class="flex items-center gap-4">
-                  <div class="w-10 h-10 bg-sunny-50 rounded-xl"></div>
+                  <div class="w-10 h-10 bg-coral-50 rounded-xl"></div>
                   <div>
-                    <div class="h-4 w-24 bg-sunny-100 rounded mb-2"></div>
-                    <div class="h-2 w-12 bg-sunny-50 rounded"></div>
+                    <div class="h-4 w-24 bg-coral-100 rounded mb-2"></div>
+                    <div class="h-2 w-12 bg-coral-50 rounded"></div>
                   </div>
                 </div>
               </div>
@@ -374,9 +374,9 @@ watch(() => route.query.tab, (newTab) => {
 
           <!-- Recent History Column (Pop Card) -->
           <div v-if="historyThemes.length > 0" class="flex-none w-60 snap-start">
-            <div class="flex items-center mb-6 gap-3 border-b-1 border-sunny-100 pb-2">
-              <div class="p-2 bg-sunny-50 rounded-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-sunny-500" fill="none" viewBox="0 0 24 24"
+            <div class="flex items-center mb-6 gap-3 border-b-2 border-coral-200 pb-2">
+              <div class="p-2 bg-coral-50 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-coral-500" fill="none" viewBox="0 0 24 24"
                   stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -388,10 +388,10 @@ watch(() => route.query.tab, (newTab) => {
               <motion.div v-for="(theme, index) in historyThemes" :key="'pop-hist-' + theme.id"
                 :initial="{ opacity: 0, y: 10 }" :animate="{ opacity: 1, y: 0 }"
                 :transition="{ delay: index * 0.05, duration: 0.4 }" @click="goToPopCard(theme.id)"
-                class="group flex items-center justify-between bg-white border border-sunny-100 rounded-2xl p-4 hover:shadow-md hover:border-sunny-200 transition-all cursor-pointer">
+                class="group flex items-center justify-between bg-white border border-coral-200 rounded-2xl p-4 hover:shadow-md hover:border-coral-400 transition-all cursor-pointer">
                 <div class="flex items-center gap-4">
                   <div
-                    class="w-10 h-10 bg-sunny-50 rounded-xl flex items-center justify-center text-sunny-400 group-hover:bg-sunny-100 group-hover:text-sunny-600 transition-all">
+                    class="w-10 h-10 bg-coral-50 rounded-xl flex items-center justify-center text-coral-500 group-hover:bg-coral-200 group-hover:text-coral-600 transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
                       stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -399,12 +399,12 @@ watch(() => route.query.tab, (newTab) => {
                     </svg>
                   </div>
                   <div class="max-w-[140px]">
-                    <h4 class="text-sunny-900 font-bold text-sm leading-tight truncate">{{ theme.theme_name }}</h4>
-                    <p class="text-sunny-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">{{ (theme.data ?
+                    <h4 class="text-coral-900 font-bold text-sm leading-tight truncate">{{ theme.theme_name }}</h4>
+                    <p class="text-coral-300 text-[10px] font-bold uppercase tracking-wider mt-0.5">{{ (theme.data ?
                       theme.data.length : 0) }} Words</p>
                   </div>
                 </div>
-                <div class="text-sunny-200 group-hover:text-sunny-600 transition-colors">
+                <div class="text-coral-200 group-hover:text-coral-400 transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -417,22 +417,22 @@ watch(() => route.query.tab, (newTab) => {
           <!-- Group Columns (Pop Card) -->
           <div v-for="(group, groupName) in groupedThemes" :key="'pop-group-' + groupName"
             class="flex-none w-60 snap-start">
-            <div class="flex items-center mb-5 gap-3 border-b-2 border-sunny-100 pb-3">
-              <div class="p-2 bg-sunny-50 rounded-lg">
-                <div class="w-5 h-5 bg-mint-300 rounded-full"></div>
+            <div class="flex items-center mb-6 gap-3 border-b-2 border-coral-200 pb-2">
+              <div class="p-2 bg-coral-50 rounded-lg">
+                <div class="w-5 h-5 bg-coral-200 rounded-full"></div>
               </div>
-              <h3 class="text-sunny-900 font-serif text-xl font-bold truncate">{{ groupName }}</h3>
-              <span class="text-sunny-400 font-sans text-xs font-bold ml-auto">{{ group.length }}</span>
+              <h3 class="text-coral-900 font-serif text-xl font-bold truncate">{{ groupName }}</h3>
+              <span class="text-coral-400 font-sans text-xs font-bold ml-auto">{{ group.length }}</span>
             </div>
 
             <div class="flex flex-col gap-3">
               <motion.div v-for="(theme, index) in group" :key="'pop-card-' + theme.id" :initial="{ opacity: 0, y: 10 }"
                 :animate="{ opacity: 1, y: 0 }" :transition="{ delay: index * 0.05, duration: 0.4 }"
                 @click="goToPopCard(theme.id)"
-                class="group flex items-center justify-between bg-white border border-sunny-100 rounded-2xl p-4 hover:shadow-md hover:border-sunny-200 transition-all cursor-pointer">
+                class="group flex items-center justify-between bg-white border border-coral-200 rounded-2xl p-4 hover:shadow-md hover:border-coral-400 transition-all cursor-pointer">
                 <div class="flex items-center gap-4">
                   <div
-                    class="w-10 h-10 bg-sunny-50 rounded-xl flex items-center justify-center text-sunny-400 group-hover:bg-sunny-100 group-hover:text-sunny-600 transition-all">
+                    class="w-10 h-10 bg-coral-50 rounded-xl flex items-center justify-center text-coral-500 group-hover:bg-coral-200 group-hover:text-coral-600 transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
                       stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
@@ -440,12 +440,12 @@ watch(() => route.query.tab, (newTab) => {
                     </svg>
                   </div>
                   <div class="max-w-[140px]">
-                    <h4 class="text-sunny-900 font-bold text-sm leading-tight truncate">{{ theme.theme_name }}</h4>
-                    <p class="text-sunny-400 text-[10px] font-bold uppercase tracking-wider mt-0.5">{{ (theme.data ?
+                    <h4 class="text-coral-900 font-bold text-sm leading-tight truncate">{{ theme.theme_name }}</h4>
+                    <p class="text-coral-300 text-[10px] font-bold uppercase tracking-wider mt-0.5">{{ (theme.data ?
                       theme.data.length : 0) }} Words</p>
                   </div>
                 </div>
-                <div class="text-sunny-200 group-hover:text-sunny-600 transition-colors">
+                <div class="text-coral-200 group-hover:text-coral-400 transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />

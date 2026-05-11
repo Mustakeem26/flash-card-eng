@@ -144,12 +144,12 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-sunny-100 flex flex-col items-center justify-center p-6 pb-24 overflow-hidden">
+    <div class="min-h-screen bg-sky-50 flex flex-col items-center justify-center p-6 pb-24 overflow-hidden">
         <!-- Navigation Header -->
         <div class="fixed top-0 left-0 right-0 p-8 flex justify-between items-center z-20 pointer-events-none">
             <motion.button :initial="{ opacity: 0, x: -20 }" :animate="{ opacity: 1, x: 0 }"
                 @click="router.push('/home?tab=pop')"
-                class="flex items-center gap-2 text-sunny-500 font-bold text-sm tracking-wide hover:text-sunny-800 transition-colors pointer-events-auto">
+                class="flex items-center gap-2 text-coral-400 font-bold text-sm tracking-wide hover:text-sunny-800 transition-colors pointer-events-auto">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="19" y1="12" x2="5" y2="12" />
@@ -176,7 +176,7 @@ onMounted(() => {
                             ? 'bg-coral-500 border-coral-500 shadow-coral-500/20'
                             : selectedIndices.includes(idx)
                                 ? ''
-                                : 'bg-white border-sunny-100 hover:shadow-[0_20px_40px_rgba(253,214,137,0.1)]'
+                                : 'bg-white border-coral-200 hover:shadow-[0_20px_40px_rgba(253,214,137,0.1)]'
                     ]" :style="selectedIndices.includes(idx) ? {
                         backgroundColor: activeColor,
                         borderColor: activeColor,
@@ -204,7 +204,7 @@ onMounted(() => {
                             {{ item.content || '...' }}
                         </p>
                         <p v-if="item.pos" class="text-[10px] font-bold uppercase tracking-widest"
-                            :class="mismatchedIndices.includes(idx) ? 'text-sunny-300' : selectedIndices.includes(idx) ? 'text-sunny-600' : 'text-sunny-400'">
+                            :class="mismatchedIndices.includes(idx) ? 'text-coral-300' : selectedIndices.includes(idx) ? 'text-coral-600' : 'text-coral-400'">
                             ({{ item.pos }})
                         </p>
                     </div>

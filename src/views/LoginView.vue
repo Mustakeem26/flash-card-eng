@@ -89,29 +89,6 @@ function resetAndClose() {
     <div class="fixed bottom-6 text-sunny-400 text-xs font-serif italic uppercase tracking-widest">
       © Flashly Box 2026 v.1.0.3
     </div>
-
-    <AnimatePresence>
-      <motion.div initial="{ opacity: 0 }" animate="{ opacity: 1 }" exit="{ opacity: 0 }" @click="resetAndClose"
-        v-if="authStore.user"
-        class="fixed inset-0 bg-sunny-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-6">
-        <motion.div :initial="{ scale: 0.9, opacity: 0 }" :animate="{ scale: 1, opacity: 1 }"
-          exit="{ scale: 0.9, opacity: 0 }"
-          class="bg-white border border-sunny-200 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
-          <div class="w-16 h-16 bg-mint-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-mint-600" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h2 class="text-2xl font-serif text-sunny-900 font-bold mb-3">Welcome Back!</h2>
-          <p class="text-sunny-500 mb-8">You've successfully logged in.</p>
-          <button @click="resetAndClose"
-            class="w-full bg-sunny-800 text-white font-bold py-3 rounded-xl hover:bg-sunny-900 transition-colors">
-            Continue to App
-          </button>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
   </div>
 </template>
 
