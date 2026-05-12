@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { motion, AnimatePresence } from 'motion-v'
-import logo from '@/assets/Flashly-logo.webp'
+import logo from '@/assets/Flashy-logo.webp'
 
 const authStore = useAuthStore()
 
@@ -37,13 +37,13 @@ function closeMenu() {
 <template>
   <motion.header :initial="{ opacity: 0, y: -20 }" :animate="{ opacity: 1, y: 0 }"
     :transition="{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }"
-    class="bg-white border-b border-sunny-100 px-6 py-6 md:px-12 md:py-8 sticky top-0 z-10 shadow-sm">
+    class="bg-white border-b border-coral-100 px-6 py-6 md:px-12 md:py-8 sticky top-0 z-10 shadow-sm">
     <div class="max-w-5xl mx-auto flex justify-between items-center">
       <!-- Logo -->
       <div class="flex items-center gap-5">
         <div
           class="w-18 h-14 bg-coral-600 rounded-2xl flex items-center justify-center overflow-hidden border-2 border-coral-500/50 shadow-md">
-          <img :src="logo" alt="Flashly Box Logo" class="w-full h-full object-cover" />
+          <img :src="logo" alt="Flashy Box Logo" class="w-full h-full object-cover" />
         </div>
         <div>
           <h1 class="text-[28px] font-serif text-coral-600 tracking-tight leading-none">Flashy Box</h1>
@@ -59,23 +59,23 @@ function closeMenu() {
         <!-- Hamburger button -->
         <div class="relative">
           <motion.button :whileTap="{ scale: 0.92 }" @click="toggleMenu"
-            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-sunny-100 transition-colors"
+            class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-coral-100 transition-colors"
             aria-label="Menu">
             <!-- Fixed-size icon canvas so bars rotate around true center -->
             <span class="relative w-5 h-4 flex items-center">
               <!-- Top bar -->
               <motion.span :animate="menuOpen ? { rotate: 45, top: '50%' } : { rotate: 0, top: '0%' }"
                 :transition="{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }"
-                class="absolute w-5 h-0.5 bg-sunny-700 rounded-full -translate-y-1/2"
+                class="absolute w-5 h-0.5 bg-coral-700 rounded-full -translate-y-1/2"
                 style="transform-origin: center center" />
               <!-- Middle bar -->
               <motion.span :animate="menuOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }"
-                :transition="{ duration: 0.18 }" class="absolute w-5 h-0.5 bg-sunny-700 rounded-full"
+                :transition="{ duration: 0.18 }" class="absolute w-5 h-0.5 bg-coral-700 rounded-full"
                 style="top: 50%; transform: translateY(-50%)" />
               <!-- Bottom bar -->
               <motion.span :animate="menuOpen ? { rotate: -45, top: '50%' } : { rotate: 0, top: '100%' }"
                 :transition="{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }"
-                class="absolute w-5 h-0.5 bg-sunny-700 rounded-full -translate-y-1/2"
+                class="absolute w-5 h-0.5 bg-coral-700 rounded-full -translate-y-1/2"
                 style="transform-origin: center center" />
             </span>
           </motion.button>
@@ -85,14 +85,14 @@ function closeMenu() {
             <motion.div v-if="menuOpen" :initial="{ opacity: 0, scale: 0.95, y: -8 }"
               :animate="{ opacity: 1, scale: 1, y: 0 }" :exit="{ opacity: 0, scale: 0.95, y: -8 }"
               :transition="{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }"
-              class="absolute right-0 mt-2 w-56 bg-white border border-sunny-300 rounded-2xl shadow-xl shadow-sunny-900/10 overflow-hidden origin-top-right">
+              class="absolute right-0 mt-2 w-56 bg-white border border-coral-200 rounded-2xl shadow-xl shadow-coral-900/10 overflow-hidden origin-top-right">
               <!-- Confirm panel -->
               <div v-if="showConfirm" class="p-4">
-                <p class="text-sunny-900 font-bold text-sm mb-1">Logout?</p>
-                <p class="text-sunny-400 text-xs mb-4">You'll need to log in again to access your collections.</p>
+                <p class="text-coral-900 font-bold text-sm mb-1">Logout?</p>
+                <p class="text-coral-400 text-xs mb-4">You'll need to log in again to access your collections.</p>
                 <div class="flex gap-2">
                   <button @click="cancelLogout"
-                    class="flex-1 py-2 text-xs font-bold text-sunny-500 bg-sunny-50 border border-sunny-200 rounded-xl hover:bg-sunny-100 transition-colors">
+                    class="flex-1 py-2 text-xs font-bold text-coral-500 bg-coral-50 border border-coral-200 rounded-xl hover:bg-coral-100 transition-colors">
                     Cancel
                   </button>
                   <button @click="confirmLogout"
@@ -104,9 +104,9 @@ function closeMenu() {
 
               <!-- Menu items -->
               <div v-else class="py-2">
-                <div class="px-4 py-3 border-b border-sunny-50">
-                  <p class="text-[10px] font-bold uppercase tracking-widest text-sunny-300">Account</p>
-                  <p class="text-sunny-700 text-sm font-semibold truncate mt-0.5">{{
+                <div class="px-4 py-3 border-b border-coral-200">
+                  <p class="text-[10px] font-bold uppercase tracking-widest text-coral-300">Account</p>
+                  <p class="text-coral-700 text-sm font-semibold truncate mt-0.5">{{
                     authStore.user?.email?.split('@')[0] }}</p>
                 </div>
                 <button @click="requestLogout"

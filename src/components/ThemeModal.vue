@@ -132,19 +132,19 @@ function resetAndClose() {
     <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-6">
       <!-- Backdrop -->
       <motion.div initial="{ opacity: 0 }" animate="{ opacity: 1 }" exit="{ opacity: 0 }" @click="resetAndClose"
-        class="absolute inset-0 bg-sunny-900/40 backdrop-blur-sm"></motion.div>
+        class="absolute inset-0 bg-sky-900/10 backdrop-blur-sm"></motion.div>
 
       <!-- Modal Content -->
       <motion.div initial="{ opacity: 0, scale: 0.9, y: 20 }" animate="{ opacity: 1, scale: 1, y: 0 }"
         exit="{ opacity: 0, scale: 0.9, y: 20 }"
         class="relative bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col">
         <!-- Header -->
-        <div class="px-8 py-6 border-b border-sunny-100 flex justify-between items-center bg-sunny-50/50">
+        <div class="px-8 py-6 border-b border-coral-100 flex justify-between items-center bg-coral-50/50">
           <div>
-            <h2 class="text-2xl font-serif text-sunny-900 font-bold">New Collection</h2>
-            <p class="text-sunny-500 text-xs font-sans font-bold uppercase tracking-widest mt-1">Archive Entry Form</p>
+            <h2 class="text-2xl font-serif text-coral-900 font-bold">New Collection</h2>
+            <p class="text-coral-500 text-xs font-sans font-bold uppercase tracking-widest mt-1">Archive Entry Form</p>
           </div>
-          <button @click="resetAndClose" class="text-sunny-300 hover:text-sunny-600 transition-colors">
+          <button @click="resetAndClose" class="text-coral-300 hover:text-coral-600 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -155,35 +155,35 @@ function resetAndClose() {
         <div class="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
           <!-- Theme Name Input -->
           <div class="space-y-3">
-            <label class="font-serif text-sunny-900 font-bold">Collection Title</label>
+            <label class="font-serif text-coral-900 font-bold">Collection Title</label>
             <input v-model="themeName" type="text" placeholder="e.g., Medical Terminology"
-              class="w-full bg-sunny-50 border border-sunny-300 rounded-2xl px-6 py-4 text-sunny-900 text-xl font-serif placeholder:text-sunny-300 focus:outline-none focus:ring-2 focus:ring-sunny-200 transition-all" />
+              class="w-full bg-coral-50 border border-coral-300 rounded-2xl px-6 py-4 text-coral-900 text-xl font-serif placeholder:text-coral-300 focus:outline-none focus:ring-2 focus:ring-coral-200 transition-all" />
           </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
             <!-- Manual Entry -->
             <div class="space-y-6">
               <div class="flex items-center justify-between">
-                <h3 class="font-serif text-sunny-900 font-bold">Single Entry</h3>
-                <span class="text-[10px] font-bold uppercase tracking-widest text-sunny-300">Manual Keying</span>
+                <h3 class="font-serif text-coral-900 font-bold">Single Entry</h3>
+                <span class="text-[10px] font-bold uppercase tracking-widest text-coral-300">Manual Keying</span>
               </div>
 
-              <div class="space-y-4 bg-sunny-50/30 p-11 rounded-3xl border border-sunny-300">
+              <div class="space-y-4 bg-coral-50/30 p-11 rounded-3xl border border-coral-300">
                 <div class="space-y-3">
                   <input v-model="newWord.word" @keyup.enter="addManualWord" placeholder="Word (e.g., Ephemeral)"
-                    class="w-full bg-white border border-sunny-300 placeholder:text-sunny-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-sunny-200 transition-all" />
+                    class="w-full bg-white border border-coral-300 placeholder:text-coral-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-coral-200 transition-all" />
                   <div class="grid grid-cols-2 gap-3">
                     <input v-model="newWord.meaning" @keyup.enter="addManualWord" placeholder="Meaning (Optional)"
-                      class="w-full bg-white border border-sunny-300 placeholder:text-sunny-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-sunny-200 transition-all" />
+                      class="w-full bg-white border border-coral-300 placeholder:text-coral-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-coral-200 transition-all" />
                     <input v-model="newWord.pos" @keyup.enter="addManualWord" placeholder="POS (e.g., Adj)"
-                      class="w-full bg-white border border-sunny-300 placeholder:text-sunny-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-sunny-200 transition-all" />
+                      class="w-full bg-white border border-coral-300 placeholder:text-coral-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-coral-200 transition-all" />
                   </div>
                 </div>
 
                 <motion.button :whileHover="canAppend ? { scale: 1.02 } : {}"
                   :whileTap="canAppend ? { scale: 0.98 } : {}" @click="addManualWord" :disabled="!canAppend"
-                  class="w-full bg-sunny-800 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-sunny-900/10 disabled:opacity-30 disabled:cursor-not-allowed"
-                  :class="canAppend ? 'hover:bg-sunny-900' : ''">
+                  class="w-full bg-coral-300 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-coral-700/10 disabled:opacity-30 disabled:cursor-not-allowed"
+                  :class="canAppend ? 'hover:bg-coral-500' : ''">
                   Append to List
                 </motion.button>
               </div>
@@ -192,25 +192,25 @@ function resetAndClose() {
             <!-- Import Section -->
             <div class="space-y-6">
               <div class="flex items-center justify-between">
-                <h3 class="font-serif text-sunny-900 font-bold">Batch Import</h3>
-                <span class="text-[10px] font-bold uppercase tracking-widest text-sunny-300">Excel / CSV Support</span>
+                <h3 class="font-serif text-coral-900 font-bold">Batch Import</h3>
+                <span class="text-[10px] font-bold uppercase tracking-widest text-coral-300">Excel / CSV Support</span>
               </div>
 
               <div @dragover.prevent="dragActive = true" @dragleave.prevent="dragActive = false" @drop="handleDrop"
-                :class="dragActive ? 'border-mint-400 bg-mint-50/30' : 'border-sunny-300 bg-sunny-50/30'"
-                class="relative border-2 border-dashed rounded-3xl p-5 flex flex-col items-center justify-center text-center transition-all min-h-[200px]">
+                :class="dragActive ? 'border-mint-400 bg-mint-50/30' : 'border-coral-300 bg-coral-50/30'"
+                class="relative border-2 border-dashed rounded-3xl p-5 flex flex-col items-center justify-center text-center transition-all min-h-[260px]">
                 <div
-                  class="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-sunny-300 mb-6">
+                  class="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center text-coral-300 mb-6">
                   <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                       d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z" />
                   </svg>
                 </div>
-                <p class="font-serif text-sunny-900 font-bold mb-2">Drag & Drop Spreadsheet</p>
+                <p class="font-serif text-coral-900 font-bold mb-2">Drag & Drop Spreadsheet</p>
 
                 <label
-                  class="cursor-pointer bg-white border border-sunny-300 text-sunny-700 font-bold px-6 py-3 rounded-xl hover:shadow-md transition-all">
+                  class="cursor-pointer bg-white border border-coral-300 text-coral-700 font-bold px-6 py-3 rounded-xl hover:shadow-md transition-all">
                   Browse Files
                   <input type="file" class="hidden" @change="handleFileUpload" accept=".xlsx, .xls, .csv" />
                 </label>
@@ -219,26 +219,26 @@ function resetAndClose() {
           </div>
 
           <!-- Preview -->
-          <div v-if="words.length > 0" class="space-y-6 pt-6 border-t border-sunny-100">
+          <div v-if="words.length > 0" class="space-y-6 pt-6 border-t border-coral-100">
             <div class="flex items-baseline justify-between">
-              <h3 class="font-serif text-sunny-900 font-bold">Registry Preview</h3>
-              <span class="text-sunny-400 font-sans text-xs font-bold">{{ words.length }} Cards Staged</span>
+              <h3 class="font-serif text-coral-900 font-bold">Registry Preview</h3>
+              <span class="text-coral-400 font-sans text-xs font-bold">{{ words.length }} Cards Staged</span>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <AnimatePresence>
                 <motion.div v-for="(word, index) in words" :key="index" initial="{ opacity: 0, x: -10 }"
                   animate="{ opacity: 1, x: 0 }" exit="{ opacity: 0, scale: 0.95 }"
-                  class="group flex items-start justify-between bg-sunny-50/50 border border-sunny-100 p-4 rounded-2xl hover:bg-white hover:shadow-md transition-all">
+                  class="group flex items-start justify-between bg-coral-50/50 border border-coral-100 p-4 rounded-2xl hover:bg-white hover:shadow-md transition-all">
                   <div>
                     <div class="flex items-center gap-2 mb-1">
-                      <span class="font-serif font-bold text-sunny-900">{{ word.word }}</span>
+                      <span class="font-serif font-bold text-coral-900">{{ word.word }}</span>
                       <span v-if="word.pos"
-                        class="px-2 py-0.5 bg-sunny-800 text-white text-[8px] font-bold rounded-full uppercase tracking-widest">
+                        class="px-2 py-0.5 bg-coral-800 text-white text-[8px] font-bold rounded-full uppercase tracking-widest">
                         {{ word.pos }}
                       </span>
                     </div>
-                    <p class="text-sunny-500 text-xs italic">{{ word.meaning || 'Details will auto-generate' }}</p>
+                    <p class="text-coral-500 text-xs italic">{{ word.meaning || 'Details will auto-generate' }}</p>
                   </div>
                   <button @click="removeWord(index)"
                     class="opacity-0 group-hover:opacity-100 p-2 text-coral-400 hover:text-coral-600 transition-all">
@@ -255,14 +255,14 @@ function resetAndClose() {
         </div>
 
         <!-- Footer -->
-        <div class="px-8 py-6 border-t border-sunny-100 bg-white flex justify-end gap-4">
+        <div class="px-8 py-6 border-t border-coral-100 bg-white flex justify-end gap-4">
           <button @click="resetAndClose"
-            class="px-8 py-3 text-sunny-500 font-bold text-sm tracking-wide hover:text-sunny-800 transition-colors">
+            class="px-8 py-3 text-coral-500 font-bold text-sm tracking-wide hover:text-coral-800 transition-colors">
             Cancel
           </button>
           <motion.button :whileHover="{ scale: 1.02 }" :whileTap="{ scale: 0.98 }" @click="saveTheme"
             :disabled="!themeName || words.length === 0 || isSaving"
-            class="bg-sunny-800 text-white font-bold px-10 py-3 rounded-2xl hover:bg-sunny-900 transition-colors disabled:opacity-30 disabled:cursor-not-allowed shadow-xl shadow-sunny-900/10">
+            class="bg-coral-300 text-white font-bold px-10 py-3 rounded-2xl hover:bg-coral-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed shadow-xl shadow-coral-900/10">
             {{ isSaving ? 'Archiving Collection...' : 'Create Collection' }}
           </motion.button>
         </div>
@@ -281,11 +281,11 @@ function resetAndClose() {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #a7f3d0;
+  background: #fda4af;
   border-radius: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #6ee7b7;
+  background: #f43f5e;
 }
 </style>

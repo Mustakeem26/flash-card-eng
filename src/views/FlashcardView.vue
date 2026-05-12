@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { supabase } from '@/lib/supabaseClient'
 import { motion, AnimatePresence } from 'motion-v'
 import { toPng } from 'html-to-image'
-import logo from '@/assets/Flashly-logo.webp'
+import logo from '@/assets/Flashy-logo.webp'
 import EditThemeModal from '@/components/EditThemeModal.vue'
 import { useHistoryStore } from '@/stores/historyStore'
 
@@ -305,7 +305,7 @@ async function prepareShare() {
 function downloadImage() {
   if (!previewDataUrl.value) return
   const link = document.createElement('a')
-  link.download = `flashly-${currentWord.value?.word || 'card'}.png`
+  link.download = `flashy-${currentWord.value?.word || 'card'}.png`
   link.href = previewDataUrl.value
   link.click()
 }
@@ -361,10 +361,10 @@ onMounted(() => {
     </div>
 
     <div v-if="loading"
-      class="w-full max-w-md aspect-[3/4] bg-white border border-sunny-100 rounded-3xl p-12 flex flex-col items-center justify-center shadow-[0_20px_50px_rgba(253,214,137,0.05)] animate-pulse">
-      <div class="w-12 h-1 bg-sunny-100 rounded-full mb-12"></div>
-      <div class="w-48 h-10 bg-sunny-100 rounded-xl mb-8"></div>
-      <div class="w-24 h-4 bg-sunny-100 rounded-lg"></div>
+      class="w-full max-w-md aspect-[3/4] bg-white border border-coral-100 rounded-3xl p-12 flex flex-col items-center justify-center shadow-[0_20px_50px_rgba(253,214,137,0.05)] animate-pulse">
+      <div class="w-12 h-1 bg-coral-100 rounded-full mb-12"></div>
+      <div class="w-48 h-10 bg-coral-100 rounded-xl mb-8"></div>
+      <div class="w-24 h-4 bg-coral-100 rounded-lg"></div>
     </div>
 
     <div v-else-if="currentWord" class="w-full max-w-md relative mt-16">
@@ -532,10 +532,10 @@ onMounted(() => {
             d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5S19.832 5.477 21 6.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
         </svg>
       </div>
-      <h3 class="text-sunny-800 font-serif italic text-xl mb-2">Empty Collection</h3>
-      <p class="text-sunny-500 text-sm">This collection doesn't have any cards registered yet.</p>
+      <h3 class="text-coral-800 font-serif italic text-xl mb-2">Empty Collection</h3>
+      <p class="text-coral-500 text-sm">This collection doesn't have any cards registered yet.</p>
       <motion.button @click="router.push('/home')"
-        class="mt-8 bg-sunny-800 text-white font-bold px-8 py-3 rounded-xl hover:bg-sunny-900 transition-colors">
+        class="mt-8 bg-coral-800 text-white font-bold px-8 py-3 rounded-xl hover:bg-coral-900 transition-colors">
         Return to Library
       </motion.button>
     </div>
@@ -543,7 +543,7 @@ onMounted(() => {
 
   <!-- Off-screen Story Template for Image Generation -->
   <div v-if="currentWord" class="fixed -left-[2000px] top-0 pointer-events-none">
-    <div ref="storyTemplateRef" class="w-[1080px] h-[1920px] bg-sunny-100 flex flex-col items-center p-20 font-sans">
+    <div ref="storyTemplateRef" class="w-[1080px] h-[1920px] bg-coral-100 flex flex-col items-center p-20 font-sans">
       <!-- Background Decorative Elements -->
       <div
         class="absolute top-0 right-0 w-[600px] h-[600px] bg-mint-200/20 rounded-full -translate-y-1/2 translate-x-1/3">
@@ -556,12 +556,12 @@ onMounted(() => {
       <div class="w-full flex justify-between items-center mb-24 z-10">
         <div class="flex items-center gap-6">
           <div
-            class="w-24 h-24 bg-sunny-800 rounded-3xl flex items-center justify-center overflow-hidden border-4 border-sunny-700/50 shadow-xl">
-            <img :src="logo" alt="Flashly Box" class="w-full h-full object-cover" />
+            class="w-24 h-24 bg-coral-800 rounded-3xl flex items-center justify-center overflow-hidden border-4 border-coral-700/50 shadow-xl">
+            <img :src="logo" alt="Flashy Box" class="w-full h-full object-cover" />
           </div>
           <div>
-            <h1 class="text-6xl font-serif text-sunny-900 font-bold tracking-tight">Flashly Box</h1>
-            <p class="text-sunny-500 text-xl font-bold uppercase tracking-[0.4em] mt-2">Daily Card</p>
+            <h1 class="text-6xl font-serif text-coral-900 font-bold tracking-tight">Flashy Box</h1>
+            <p class="text-coral-500 text-xl font-bold uppercase tracking-[0.4em] mt-2">Daily Card</p>
           </div>
         </div>
         <div class="text-right">
@@ -573,36 +573,36 @@ onMounted(() => {
       <div class="w-full flex-1 flex flex-col justify-center gap-16 z-10">
         <!-- Front Side (Visual) -->
         <div
-          class="w-full bg-white border-2 border-sunny-200 rounded-[60px] p-24 flex flex-col items-center justify-center text-center shadow-[0_40px_100px_rgba(253,214,137,0.15)] overflow-hidden relative">
+          class="w-full bg-white border-2 border-coral-200 rounded-[60px] p-24 flex flex-col items-center justify-center text-center shadow-[0_40px_100px_rgba(253,214,137,0.15)] overflow-hidden relative">
           <div class="absolute top-0 left-0 w-full h-4 bg-coral-300"></div>
-          <p class="text-sunny-400 text-xl font-bold uppercase tracking-[0.3em] mb-12">English Word</p>
-          <h2 class="text-9xl font-serif text-sunny-900 font-bold leading-tight mb-8">{{ currentWord.word }}</h2>
+          <p class="text-coral-400 text-xl font-bold uppercase tracking-[0.3em] mb-12">English Word</p>
+          <h2 class="text-9xl font-serif text-coral-900 font-bold leading-tight mb-8">{{ currentWord.word }}</h2>
           <div v-if="currentWord.pos"
-            class="px-8 py-3 bg-sunny-800 rounded-full text-xl text-sunny-300 font-bold uppercase tracking-widest">
+            class="px-8 py-3 bg-coral-800 rounded-full text-xl text-coral-300 font-bold uppercase tracking-widest">
             {{ currentWord.pos }}
           </div>
         </div>
 
         <!-- Back Side (Visual) -->
         <div
-          class="w-full bg-sunny-900 border-2 border-sunny-800 rounded-[60px] p-24 flex flex-col items-center justify-center text-center shadow-[0_40px_100px_rgba(0,0,0,0.2)] overflow-hidden relative">
+          class="w-full bg-coral-900 border-2 border-coral-800 rounded-[60px] p-24 flex flex-col items-center justify-center text-center shadow-[0_40px_100px_rgba(0,0,0,0.2)] overflow-hidden relative">
           <div class="absolute top-0 left-0 w-full h-4 bg-coral-500"></div>
-          <p class="text-sunny-500 text-xl font-bold uppercase tracking-[0.3em] mb-12">Translation</p>
-          <p class="text-sunny-50 font-serif italic text-7xl leading-relaxed mb-16">
+          <p class="text-coral-500 text-xl font-bold uppercase tracking-[0.3em] mb-12">Translation</p>
+          <p class="text-coral-50 font-serif italic text-7xl leading-relaxed mb-16">
             {{ currentWord.meaning }}
           </p>
-          <div v-if="currentWord.example" class="w-full border-t border-sunny-800 pt-16">
-            <p class="text-sunny-500 text-lg font-bold uppercase tracking-widest mb-6">In Context</p>
-            <p class="text-sunny-200 font-sans text-3xl italic leading-relaxed px-12">
+          <div v-if="currentWord.example" class="w-full border-t border-coral-800 pt-16">
+            <p class="text-coral-500 text-lg font-bold uppercase tracking-widest mb-6">In Context</p>
+            <p class="text-coral-200 font-sans text-3xl italic leading-relaxed px-12">
               "{{ currentWord.example }}"
             </p>
           </div>
           <div v-if="currentWord.synonyms && currentWord.synonyms.length > 0"
-            class="w-full border-t border-sunny-800 pt-16 mt-16">
-            <p class="text-sunny-500 text-lg font-bold uppercase tracking-widest mb-8">Synonyms</p>
+            class="w-full border-t border-coral-800 pt-16 mt-16">
+            <p class="text-coral-500 text-lg font-bold uppercase tracking-widest mb-8">Synonyms</p>
             <div class="flex flex-wrap gap-4 justify-center">
               <span v-for="syn in currentWord.synonyms" :key="syn"
-                class="px-8 py-3 bg-sunny-50 border border-sunny-700 rounded-full text-2xl text-sunny-600 font-bold italic">{{
+                class="px-8 py-3 bg-coral-50 border border-coral-700 rounded-full text-2xl text-coral-600 font-bold italic">{{
                   syn }}</span>
             </div>
           </div>
@@ -611,7 +611,7 @@ onMounted(() => {
 
       <!-- Footer -->
       <div class="w-full mt-24 flex justify-center z-10">
-        <p class="text-sunny-300 text-xl font-bold uppercase tracking-[0.5em]">Practice · Learn · Grow</p>
+        <p class="text-coral-300 text-xl font-bold uppercase tracking-[0.5em]">Practice · Learn · Grow</p>
       </div>
     </div>
   </div>
@@ -629,16 +629,16 @@ onMounted(() => {
         class="relative bg-white rounded-t-[40px] shadow-2xl p-8 max-h-[90vh] flex flex-col">
         <!-- Drag Handle -->
         <motion.div :initial="{ opacity: 0, y: 10 }" :animate="{ opacity: 1, y: 0 }" :transition="{ delay: 0.2 }"
-          class="w-12 h-1.5 bg-sunny-200 rounded-full mx-auto mb-8 flex-shrink-0" />
+          class="w-12 h-1.5 bg-coral-200 rounded-full mx-auto mb-8 flex-shrink-0" />
 
         <div class="flex justify-between items-center mb-6 px-2">
           <motion.div :initial="{ opacity: 0, x: -20 }" :animate="{ opacity: 1, x: 0 }" :transition="{ delay: 0.25 }">
-            <h3 class="text-2xl font-serif text-sunny-900 font-bold">Share Preview</h3>
-            <p class="text-sunny-500 text-xs font-bold uppercase tracking-widest mt-1">Ready for Social Media</p>
+            <h3 class="text-2xl font-serif text-coral-900 font-bold">Share Preview</h3>
+            <p class="text-coral-500 text-xs font-bold uppercase tracking-widest mt-1">Ready for Social Media</p>
           </motion.div>
           <motion.button :initial="{ opacity: 0, scale: 0.5 }" :animate="{ opacity: 1, scale: 1 }"
             :transition="{ delay: 0.3 }" @click="isDrawerOpen = false"
-            class="p-2 rounded-full bg-sunny-200/50 text-sunny-500 hover:bg-sunny-200 hover:text-sunny-800 transition-all">
+            class="p-2 rounded-full bg-coral-200/50 text-coral-500 hover:bg-coral-200 hover:text-coral-800 transition-all">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
@@ -648,10 +648,10 @@ onMounted(() => {
 
         <motion.div :initial="{ opacity: 0, scale: 0.95, y: 20 }" :animate="{ opacity: 1, scale: 1, y: 0 }"
           :transition="{ delay: 0.35, duration: 0.5 }"
-          class="flex-1 flex items-center justify-center mb-8 rounded-2xl bg-sunny-100 p-4 min-h-0">
+          class="flex-1 flex items-center justify-center mb-8 rounded-2xl bg-coral-100 p-4 min-h-0">
           <img v-if="previewDataUrl" :src="previewDataUrl" alt="Flashcard Story Preview"
             class="max-w-full max-h-full rounded-xl shadow-lg object-contain" />
-          <div v-else class="h-64 flex items-center justify-center text-sunny-400">
+          <div v-else class="h-64 flex items-center justify-center text-coral-400">
             <svg class="w-10 h-10 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
               stroke-linecap="round" stroke-linejoin="round">
               <line x1="12" y1="2" x2="12" y2="6" />
@@ -669,7 +669,7 @@ onMounted(() => {
         <motion.div :initial="{ opacity: 0, y: 20 }" :animate="{ opacity: 1, y: 0 }" :transition="{ delay: 0.45 }"
           class="flex gap-4">
           <motion.button :whileHover="{ scale: 1.02 }" :whileTap="{ scale: 0.98 }" @click="downloadImage"
-            class="flex-[2] py-5 rounded-2xl bg-sunny-800 text-white font-bold hover:bg-sunny-900 transition-all shadow-xl shadow-sunny-800/20 flex items-center justify-center gap-3">
+            class="flex-[2] py-5 rounded-2xl bg-coral-800 text-white font-bold hover:bg-coral-900 transition-all shadow-xl shadow-coral-800/20 flex items-center justify-center gap-3">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />

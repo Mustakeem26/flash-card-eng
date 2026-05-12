@@ -54,7 +54,7 @@ function initGame() {
     const picked = [...remaining].sort(() => Math.random() - 0.5).slice(0, 6)
     const cards: any[] = []
     picked.forEach((w) => {
-        cards.push({ type: 'word', content: w.word, id: w.word })
+        cards.push({ type: 'word', content: w.word, id: w.word, pos: w.pos })
         cards.push({ type: 'meaning', content: w.meaning, pos: w.pos, id: w.word })
     })
 
@@ -169,7 +169,7 @@ onMounted(() => {
             class="w-full max-w-7xl mx-auto px-4 sm:px-8 md:px-16 lg:px-48 py-12">
             <div class="grid grid-cols-3 md:grid-cols-4 gap-1">
                 <motion.div v-for="(item, idx) in gameCards" :key="idx"
-                    class="aspect-square rounded-md shadow-[0_10px_30px_rgba(253,214,137,0.05)] transition-all flex items-center justify-center p-4 text-center group cursor-pointer border-2"
+                    class="aspect-square rounded-md shadow-[0_10px_30px_rgba(253,214,137,0.05)] transition-all flex flex-col items-center justify-center p-4 text-center group cursor-pointer border-2"
                     :class="[
                         matchedIds.includes(item.id) ? 'opacity-0 pointer-events-none' : 'opacity-100',
                         mismatchedIndices.includes(idx)
@@ -192,20 +192,20 @@ onMounted(() => {
                         x: { duration: 0.4 },
                         default: { type: 'spring', damping: 20, delay: matchedIds.includes(item.id) ? 0 : idx * 0.05 }
                     }">
-                    <div v-if="item.type === 'word'">
-                        <p class="font-serif font-bold text-lg md:text-xl transition-transform"
+                    <div v-if="item.type === 'word'" class="flex flex-col items-center gap-1">
+                        <p class="font-serif font-bold text-sm md:text-base transition-transform"
                             :class="mismatchedIndices.includes(idx) ? 'text-white scale-110' : selectedIndices.includes(idx) ? 'text-sunny-900 scale-110' : 'text-sunny-800 group-hover:scale-110'">
                             {{ item.content }}
                         </p>
-                    </div>
-                    <div v-else class="flex flex-col items-center gap-1">
-                        <p class="font-serif italic text-sm md:text-base leading-tight"
-                            :class="mismatchedIndices.includes(idx) ? 'text-sunny-100' : selectedIndices.includes(idx) ? 'text-sunny-800' : 'text-sunny-700'">
-                            {{ item.content || '...' }}
-                        </p>
-                        <p v-if="item.pos" class="text-[10px] font-bold uppercase tracking-widest"
+                        <p v-if="item.pos" class="text-[9px] md:text-[10px] font-bold uppercase tracking-widest"
                             :class="mismatchedIndices.includes(idx) ? 'text-coral-300' : selectedIndices.includes(idx) ? 'text-coral-600' : 'text-coral-400'">
                             ({{ item.pos }})
+                        </p>
+                    </div>
+                    <div v-else class="flex flex-col items-center gap-1">
+                        <p class="font-serif italic text-xs md:text-sm leading-tight"
+                            :class="mismatchedIndices.includes(idx) ? 'text-sunny-100' : selectedIndices.includes(idx) ? 'text-sunny-800' : 'text-sunny-700'">
+                            {{ item.content || '...' }}
                         </p>
                     </div>
                 </motion.div>
@@ -214,7 +214,7 @@ onMounted(() => {
 
         <!-- Success Message -->
         <motion.div v-if="isGameFinished" initial="{ opacity: 0, scale: 0.9 }" animate="{ opacity: 1, scale: 1 }"
-            class="text-center p-12 bg-white rounded-[40px] shadow-2xl border border-sunny-100 max-w-lg mx-auto z-30">
+            class="text-center p-12 bg-white rounded-[40px] shadow-2xl border border-coral-200 max-w-lg mx-auto z-30">
             <div class="w-20 h-20 bg-mint-100 rounded-full flex items-center justify-center mx-auto mb-8">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-mint-600" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
@@ -222,15 +222,15 @@ onMounted(() => {
                 </svg>
             </div>
             <h2 class="text-4xl font-serif text-sunny-900 font-bold mb-4 italic">Success!</h2>
-            <p class="text-sunny-500 mb-10 leading-relaxed">Wonderful! You've mastered all the words in this collection.
+            <p class="text-coral-400 mb-10 leading-relaxed">Wonderful! You've mastered all the words in this collection.
                 Keep up the great work!</p>
             <div class="flex flex-col gap-4">
                 <button @click="resetGame"
-                    class="w-full bg-sunny-800 text-white font-bold py-4 rounded-2xl hover:bg-sunny-900 transition-all shadow-xl shadow-sunny-800/20">
+                    class="w-full bg-coral-300 text-white font-bold py-4 rounded-2xl hover:bg-coral-600 transition-all shadow-xl shadow-coral-800/20">
                     Play Again
                 </button>
                 <button @click="router.push('/home?tab=pop')"
-                    class="w-full bg-sunny-50 text-sunny-600 font-bold py-4 rounded-2xl hover:bg-sunny-100 transition-all">
+                    class="w-full bg-coral-300 text-coral-600 font-bold py-4 rounded-2xl hover:bg-coral-100 transition-all">
                     Back to Home
                 </button>
             </div>

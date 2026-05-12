@@ -16,7 +16,7 @@ const router = useRouter()
       </p>
       <div class="flex gap-3 justify-center">
         <button @click="router.push('/home')"
-          class="px-6 py-3 bg-coral-800 text-white font-bold text-sm rounded-xl hover:bg-coral-900 transition-colors">
+          class="px-6 py-3 bg-coral-400 text-white font-bold text-sm rounded-xl hover:bg-coral-900 transition-colors">
           Go Home
         </button>
         <button @click="router.go(-1)"
@@ -28,7 +28,7 @@ const router = useRouter()
     <div class="mt-12">
       <div class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-coral-200 rounded-full shadow-sm">
         <div class="w-1.5 h-1.5 rounded-full bg-coral-300"></div>
-        <span class="text-sunny-400 text-[11px] font-bold uppercase tracking-widest">Flashly Box</span>
+        <span class="text-coral-400 text-[11px] font-bold uppercase tracking-widest">Flashy Box</span>
         <div class="w-1.5 h-1.5 rounded-full bg-coral-300"></div>
       </div>
     </div>

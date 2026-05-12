@@ -311,18 +311,18 @@ watch(() => route.query.tab, (newTab) => {
         </div>
 
         <motion.div v-else initial="{ opacity: 0 }" animate="{ opacity: 1 }"
-          class="bg-sunny-100/50 border border-sunny-200 border-dashed rounded-3xl p-20 text-center">
-          <div class="mb-4 text-sunny-300">
+          class="bg-sky-100/50 border border-coral-200 border-dashed rounded-3xl p-20 text-center">
+          <div class="mb-4 text-coral-400">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1"
                 d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5S19.832 5.477 21 6.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
             </svg>
           </div>
-          <p class="text-sunny-800 font-serif italic text-lg">The library is currently awaiting new entries.</p>
-          <p class="text-sunny-500 text-sm mt-1">Start your educational narrative by adding a collection.</p>
+          <p class="text-coral-800 font-serif italic text-lg">The library is currently awaiting new entries.</p>
+          <p class="text-coral-500 text-sm mt-1">Start your educational narrative by adding a collection.</p>
           <motion.button :whileHover="{ scale: 1.02 }" :whileTap="{ scale: 0.98 }" @click="isModalOpen = true"
-            class="mt-8 bg-sunny-800 text-white font-bold px-10 py-3 rounded-2xl hover:bg-sunny-900 transition-all font-sans shadow-lg shadow-sunny-800/20">
+            class="mt-8 bg-coral-800 text-white font-bold px-10 py-3 rounded-2xl hover:bg-coral-900 transition-all font-sans shadow-lg shadow-coral-800/20">
             Initialize First Collection
           </motion.button>
         </motion.div>
@@ -333,7 +333,7 @@ watch(() => route.query.tab, (newTab) => {
         <div
           class="flex flex-col sm:flex-row sm:items-baseline justify-between mb-2 border-b-2 border-coral-200 pb-2 gap-2">
           <div class="flex items-center gap-4">
-            <h2 class="text-sunny-800 font-serif font-bold text-xl">Archive Registry</h2>
+            <h2 class="text-coral-800 font-serif font-bold text-xl">Archive Registry</h2>
             <Teleport to="#navbar-quick-scroll">
               <select @change="scrollToGroup" v-if="Object.keys(groupedThemes).length > 0"
                 class="bg-white border border-coral-200 text-coral-600 text-sm rounded-lg focus:ring-coral-500 focus:border-coral-500 block p-1.5 px-3 cursor-pointer hover:bg-coral-50 transition-colors outline-none font-sans w-32 sm:w-auto truncate shadow-sm">
@@ -344,7 +344,7 @@ watch(() => route.query.tab, (newTab) => {
               </select>
             </Teleport>
           </div>
-          <span class="text-sunny-800 font-sans text-sm font-bold">{{ themes.length }} Collections</span>
+          <span class="text-coral-800 font-sans text-sm font-bold">{{ themes.length }} Collections</span>
         </div>
         <div class="h-px w-full mb-8 opacity-50"></div>
         <!-- Skeleton Loading State (Pop Card) -->
@@ -457,7 +457,7 @@ watch(() => route.query.tab, (newTab) => {
         </div>
 
         <motion.div v-else initial="{ opacity: 0 }" animate="{ opacity: 1 }"
-          class="bg-sunny-100/50 border border-sunny-200 border-dashed rounded-3xl p-20 text-center">
+          class="bg-sky-100/50 border border-sunny-200 border-dashed rounded-3xl p-20 text-center">
           <div class="mb-4 text-sunny-300">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
