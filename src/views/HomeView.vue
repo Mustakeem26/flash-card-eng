@@ -332,7 +332,10 @@ watch(() => route.query.tab, (newTab) => {
                   Collection</p>
                 <div
                   class="mt-4 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-coral-300">
-                  <span></span>
+                  <span>
+                    <p v-if="theme.sub_name" class="text-coral-400 tracking-wider">{{
+                      theme.sub_name }}</p>
+                  </span>
                   <span class="group-hover:text-coral-600 transition-colors uppercase">Open Card &rarr;</span>
                 </div>
               </motion.div>
@@ -388,7 +391,10 @@ watch(() => route.query.tab, (newTab) => {
                         Collection</p>
                       <div
                         class="mt-4 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-coral-300">
-                        <span></span>
+                        <span>
+                          <p v-if="theme.sub_name" class="text-coral-400 tracking-wider">{{
+                            theme.sub_name }}</p>
+                        </span>
                         <span class="group-hover:text-coral-600 transition-colors uppercase">Open Card &rarr;</span>
                       </div>
                     </motion.div>
@@ -404,12 +410,16 @@ watch(() => route.query.tab, (newTab) => {
                 @click="goToTheme(theme.id)"
                 class="group relative cursor-pointer bg-white border border-coral-200 rounded-2xl p-5 shadow-[0_4px_20px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_rgba(253,214,137,0.08)] hover:-translate-y-1 transition-all duration-500 flex flex-col h-full">
                 <div class="w-8 h-1 bg-coral-300 rounded-full mb-3 group-hover:w-16 transition-all duration-500"></div>
-                <h3 class="text-sunny-900 font-serif text-lg font-bold mb-1 pr-8">{{ theme.theme_name }}</h3>
+                <h3 class="text-sunny-900 font-serif text-lg font-bold mb-1 pr-8">{{ theme.theme_name }}
+                </h3>
                 <p class="text-sunny-900 text-sm font-sans italic">{{ (theme.data ? theme.data.length : 0) }} Terms in
                   Collection</p>
                 <div
                   class="mt-4 flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-coral-300">
-                  <span></span>
+                  <span>
+                    <p v-if="theme.sub_name" class="text-coral-400 tracking-wider">{{
+                      theme.sub_name }}</p>
+                  </span>
                   <span class="group-hover:text-coral-600 transition-colors uppercase">Open Card &rarr;</span>
                 </div>
               </motion.div>
@@ -561,7 +571,7 @@ watch(() => route.query.tab, (newTab) => {
                       :initial="{ opacity: 0, y: 10 }" :animate="{ opacity: 1, y: 0 }"
                       :transition="{ delay: index * 0.05, duration: 0.4 }" @click="goToPopCard(theme.id)"
                       class="group flex items-center justify-between bg-white border border-coral-200 rounded-2xl p-4 hover:shadow-md hover:border-coral-400 transition-all cursor-pointer">
-                      <div class="flex items-center gap-4">
+                      <div class="flex items-center gap-2">
                         <div
                           class="w-10 h-10 bg-coral-50 rounded-xl flex items-center justify-center text-coral-500 group-hover:bg-coral-200 group-hover:text-coral-600 transition-all">
                           <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
@@ -595,7 +605,7 @@ watch(() => route.query.tab, (newTab) => {
                 :animate="{ opacity: 1, y: 0 }" :transition="{ delay: index * 0.05, duration: 0.4 }"
                 @click="goToPopCard(theme.id)"
                 class="group flex items-center justify-between bg-white border border-coral-200 rounded-2xl p-4 hover:shadow-md hover:border-coral-400 transition-all cursor-pointer">
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-2">
                   <div
                     class="w-10 h-10 bg-coral-50 rounded-xl flex items-center justify-center text-coral-500 group-hover:bg-coral-200 group-hover:text-coral-600 transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
@@ -606,8 +616,12 @@ watch(() => route.query.tab, (newTab) => {
                   </div>
                   <div class="max-w-[140px]">
                     <h4 class="text-coral-900 font-bold text-sm leading-tight truncate">{{ theme.theme_name }}</h4>
-                    <p class="text-coral-300 text-[10px] font-bold uppercase tracking-wider mt-0.5">{{ (theme.data ?
-                      theme.data.length : 0) }} Words</p>
+                    <p v-if="theme.sub_name" class="text-coral-300 text-[10px] font-bold tracking-wider mt-0.5">{{
+                      theme.sub_name + ' / ' }}{{ (theme.data ?
+                        theme.data.length : 0) }} W</p>
+                    <p v-else class="text-coral-300 text-[10px] font-bold uppercase tracking-wider mt-0.5">{{
+                      (theme.data ?
+                        theme.data.length : 0) }} Words</p>
                   </div>
                 </div>
                 <div class="text-coral-200 group-hover:text-coral-400 transition-colors">
