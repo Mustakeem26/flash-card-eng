@@ -20,10 +20,6 @@ const mismatchedIndices = ref<number[]>([])
 const usedWordIds = ref<string[]>([])
 const isGameFinished = ref(false)
 
-// Round complete state
-const showRoundCompletePopup = ref(false)
-const lastRoundWords = ref<any[]>([]) // Store the 6 words from last round
-
 const pastelColors = [
     '#FFC2D1', // Pink
     '#FFE8D6', // Cream/Peach
@@ -59,39 +55,12 @@ function initGame() {
 
     const picked = [...remaining].sort(() => Math.random() - 0.5).slice(0, 6)
 
-    // Save these words for potential replay
-    lastRoundWords.value = [...picked]
-
     const cards: any[] = []
     picked.forEach((w) => {
         cards.push({ type: 'word', content: w.word, id: w.word, pos: w.pos })
         cards.push({ type: 'meaning', content: w.meaning, pos: w.pos, id: w.word })
     })
 
-    gameCards.value = cards.sort(() => Math.random() - 0.5)
-}
-
-function goToNextRound() {
-    showRoundCompletePopup.value = false
-    initGame()
-}
-
-function replayCurrentRound() {
-    showRoundCompletePopup.value = false
-
-    // Reset round state
-    selectedIndices.value = []
-    matchedIds.value = []
-    clickCount.value = 0
-
-    // Use the same words from last round
-    const cards: any[] = []
-    lastRoundWords.value.forEach((w) => {
-        cards.push({ type: 'word', content: w.word, id: w.word, pos: w.pos })
-        cards.push({ type: 'meaning', content: w.meaning, pos: w.pos, id: w.word })
-    })
-
-    // Shuffle cards but keep the same words
     gameCards.value = cards.sort(() => Math.random() - 0.5)
 }
 
@@ -147,9 +116,7 @@ function handleCardClick(idx: number) {
                     setTimeout(() => {
                         const matchedInRound = [...new Set(gameCards.value.map(c => c.id))]
                         usedWordIds.value.push(...matchedInRound)
-                        // Show popup instead of auto continuing
-                        showRoundCompletePopup.value = true
-                        playSuccessSound()
+                        initGame()
                     }, 600)
                 }
             }, 200)
@@ -258,43 +225,6 @@ onUnmounted(() => {
                 </motion.div>
             </div>
         </div>
-
-        <!-- Round Complete Popup -->
-        <motion.div v-if="showRoundCompletePopup" initial="{ opacity: 0, scale: 0.9 }"
-            animate="{ opacity: 1, scale: 1 }" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div class="text-center p-6 bg-white rounded-[30px] shadow-2xl border border-coral-200 max-w-sm mx-auto">
-                <div class="w-16 h-16 bg-mint-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-mint-600" fill="none"
-                        viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
-                    </svg>
-                </div>
-                <h2 class="text-2xl font-serif text-sunny-900 font-bold mb-2 italic">Great Job!</h2>
-                <div class="flex flex-row justify-center gap-12 mt-4">
-                    <div class="flex flex-col items-center">
-                        <button @click="replayCurrentRound"
-                            class="w-20 h-20 bg-coral-50 text-coral-600 rounded-full hover:bg-coral-100 transition-all flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10" fill="none" viewBox="0 0 24 24"
-                                stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                            </svg>
-                        </button>
-                        <span class="text-coral-400 text-xs font-bold mt-2">เล่นอีกรอบ</span>
-                    </div>
-                    <div class="flex flex-col items-center">
-                        <button @click="goToNextRound"
-                            class="w-20 h-20 bg-coral-300 rounded-full hover:bg-coral-600 transition-all shadow-xl shadow-coral-800/20 flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-white" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                            </svg>
-                        </button>
-                        <span class="text-coral-400 text-xs font-bold mt-2">ต่อไป</span>
-                    </div>
-                </div>
-            </div>
-        </motion.div>
 
         <!-- Success Message (All words finished) -->
         <motion.div v-if="isGameFinished" initial="{ opacity: 0, scale: 0.9 }" animate="{ opacity: 1, scale: 1 }"
