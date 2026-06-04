@@ -21,6 +21,16 @@ const isDeleting = ref(false)
 const showConfirmDelete = ref(false)
 const dragActive = ref(false)
 
+// Category management
+const categories = ref<{ id: bigint; category_name: string }[]>([])
+const selectedCategoryId = ref<bigint | null>(null)
+const showAddCategoryModal = ref(false)
+const newCategoryName = ref('')
+const isDeletingCategory = ref(false)
+const isLoadingCategories = ref(false)
+const showDeleteConfirmModal = ref(false)
+const categoryToDelete = ref<{ id: bigint; name: string } | null>(null)
+
 const newWord = reactive({
   word: '',
   meaning: '',
@@ -31,6 +41,165 @@ const canAppend = computed(() =>
   newWord.word.trim() !== ''
 )
 
+const canSave = computed(() =>
+  themeName.value.trim() !== '' &&
+  words.value.length > 0
+)
+
+// Fetch categories for current user
+async function fetchCategories() {
+  isLoadingCategories.value = true
+  const userUid = authStore.user?.id
+  if (!userUid) {
+    isLoadingCategories.value = false
+    return
+  }
+
+  const { data, error } = await supabase
+    .from('card_category')
+    .select('id, category_name')
+    .eq('user_uid', userUid)
+    .order('created_at', { ascending: true })
+
+  if (!error && data) {
+    categories.value = data
+    // Don't auto-select any category - let user choose
+    selectedCategoryId.value = props.collection?.category_id ?? null
+  }
+  isLoadingCategories.value = false
+}
+
+// Ensure "other" category exists
+async function ensureOtherCategory(): Promise<bigint | null> {
+  const userUid = authStore.user?.id
+  if (!userUid) return null
+
+  // Check if "other" already exists
+  const { data: existing } = await supabase
+    .from('card_category')
+    .select('id')
+    .eq('user_uid', userUid)
+    .eq('category_name', 'Other')
+    .single()
+
+  if (existing) {
+    return existing.id
+  }
+
+  // Create "other" category
+  const { data: created, error } = await supabase
+    .from('card_category')
+    .insert([{
+      user_uid: userUid,
+      category_name: 'Other'
+    }])
+    .select('id')
+    .single()
+
+  if (error || !created) {
+    console.error('Failed to create "other" category:', error)
+    return null
+  }
+
+  return created.id
+}
+
+// Add new category with duplicate check
+async function addCategory() {
+  if (!newCategoryName.value.trim()) return
+
+  const userUid = authStore.user?.id
+  if (!userUid) return
+
+  const trimmedName = newCategoryName.value.trim()
+
+  // Check for duplicate category name (case-insensitive)
+  const existingCategory = categories.value.find(
+    c => c.category_name.toLowerCase() === trimmedName.toLowerCase()
+  )
+  if (existingCategory) {
+    alert(`Category "${trimmedName}" already exists. Please use a different name.`)
+    return
+  }
+
+  const { data, error } = await supabase
+    .from('card_category')
+    .insert([{
+      user_uid: userUid,
+      category_name: trimmedName
+    }])
+    .select('id, category_name')
+    .single()
+
+  if (!error && data) {
+    categories.value.push(data)
+    selectedCategoryId.value = data.id
+    newCategoryName.value = ''
+    showAddCategoryModal.value = false
+  }
+}
+
+// Delete category and reassign cards to "other"
+async function deleteCategory(categoryId: bigint) {
+  isDeletingCategory.value = true
+  const userUid = authStore.user?.id
+  if (!userUid) {
+    isDeletingCategory.value = false
+    return
+  }
+
+  // Find or create "other" category
+  let otherCategoryId = await ensureOtherCategory()
+  if (!otherCategoryId) {
+    alert('Failed to create "other" category. Cannot delete.')
+    isDeletingCategory.value = false
+    return
+  }
+
+  // Update all flashcards in this category to "other"
+  const { error: updateError } = await supabase
+    .from('flashcards')
+    .update({ category_id: otherCategoryId })
+    .eq('category_id', categoryId)
+
+  if (updateError) {
+    console.error('Failed to reassign cards:', updateError)
+    alert('Failed to reassign cards. Cannot delete category.')
+    isDeletingCategory.value = false
+    return
+  }
+
+  // Delete the category
+  const { error: deleteError } = await supabase
+    .from('card_category')
+    .delete()
+    .eq('id', categoryId)
+
+  if (!deleteError) {
+    categories.value = categories.value.filter(c => c.id !== categoryId)
+    if (selectedCategoryId.value === categoryId) {
+      selectedCategoryId.value = otherCategoryId
+    }
+  }
+
+  isDeletingCategory.value = false
+}
+
+// Open delete confirmation modal
+function openDeleteConfirmModal(categoryId: bigint) {
+  const category = categories.value.find(c => c.id === categoryId)
+  if (category) {
+    categoryToDelete.value = { id: categoryId, name: category.category_name }
+    showDeleteConfirmModal.value = true
+  }
+}
+
+// Open add category modal
+function openAddCategoryModal() {
+  newCategoryName.value = ''
+  showAddCategoryModal.value = true
+}
+
 // Initialize data from prop
 watch(() => props.isOpen, (newVal) => {
   if (newVal && props.collection) {
@@ -38,8 +207,17 @@ watch(() => props.isOpen, (newVal) => {
     words.value = (props.collection.data || []).map((w: any) =>
       typeof w === 'string' ? { word: w, meaning: '', pos: '' } : { ...w }
     )
+    selectedCategoryId.value = props.collection.category_id ?? null
   }
 })
+
+// Watch for modal open to fetch categories
+watch(() => props.isOpen, async (newVal) => {
+  if (newVal) {
+    await fetchCategories()
+    await ensureOtherCategory()
+  }
+}, { immediate: true })
 
 function addManualWord() {
   if (!canAppend.value) return
@@ -117,7 +295,8 @@ async function updateTheme() {
     .from('flashcards')
     .update({
       theme_name: themeName.value.trim(),
-      data: words.value
+      data: words.value,
+      category_id: selectedCategoryId.value
     })
     .eq('id', props.collection.id)
     .select()
@@ -179,7 +358,41 @@ async function deleteTheme() {
         </div>
 
         <div class="flex-1 overflow-y-auto p-8 space-y-10 custom-scrollbar">
-          <!-- Theme Name Input -->
+          <!-- Category Selection -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between">
+              <label class="font-serif text-coral-900 font-bold">Category</label>
+            </div>
+            <div class="flex gap-2">
+              <select v-model="selectedCategoryId"
+                class="flex-1 bg-coral-50 border border-coral-300 rounded-2xl px-6 py-4 text-coral-900 text-lg font-serif focus:outline-none focus:ring-2 focus:ring-coral-200 transition-all appearance-none cursor-pointer">
+                <option value="" disabled>Select a category...</option>
+                <option v-for="cat in categories" :key="cat.id.toString()" :value="cat.id">{{ cat.category_name }}
+                </option>
+              </select>
+              <motion.button :whileHover="{ scale: 1.05 }" :whileTap="{ scale: 0.95 }" @click="openAddCategoryModal"
+                class="bg-mint-300 text-white p-4 rounded-2xl hover:bg-mint-400 transition-colors"
+                title="Add new category">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+              </motion.button>
+              <motion.button :whileHover="{ scale: 1.05 }" :whileTap="{ scale: 0.95 }"
+                @click="selectedCategoryId && openDeleteConfirmModal(selectedCategoryId)"
+                :disabled="!selectedCategoryId"
+                class="bg-red-300 text-white p-4 rounded-2xl hover:bg-red-400 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                title="Delete category">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" />
+                </svg>
+              </motion.button>
+            </div>
+          </div>
+
+          <!-- Collection Title Input -->
           <div class="space-y-3">
             <label class="font-serif text-coral-900 font-bold">Collection Title</label>
             <input v-model="themeName" type="text" placeholder="e.g., Medical Terminology"
@@ -298,7 +511,7 @@ async function deleteTheme() {
               Cancel
             </button>
             <motion.button :whileHover="{ scale: 1.02 }" :whileTap="{ scale: 0.98 }" @click="updateTheme"
-              :disabled="!themeName || words.length === 0 || isSaving"
+              :disabled="!canSave || isSaving"
               class="bg-coral-300 text-white font-bold px-10 py-3 rounded-2xl hover:bg-coral-600 transition-colors disabled:opacity-30 disabled:cursor-not-allowed shadow-xl shadow-coral-500/20">
               {{ isSaving ? 'Updating Collection...' : 'Save Changes' }}
             </motion.button>
@@ -336,6 +549,86 @@ async function deleteTheme() {
               </div>
             </motion.div>
           </div>
+        </AnimatePresence>
+
+        <!-- Add Category Modal -->
+        <AnimatePresence>
+          <motion.div v-if="showAddCategoryModal" initial="{ opacity: 0 }" animate="{ opacity: 1 }"
+            exit="{ opacity: 0 }" class="absolute inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showAddCategoryModal = false"></div>
+            <motion.div initial="{ opacity: 0, scale: 0.9, y: 20 }" animate="{ opacity: 1, scale: 1, y: 0 }"
+              exit="{ opacity: 0, scale: 0.9, y: 20 }"
+              class="relative bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md">
+              <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-serif text-coral-900 font-bold">Add New Category</h3>
+                <button @click="showAddCategoryModal = false"
+                  class="text-coral-300 hover:text-coral-600 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-bold text-coral-700 mb-2">Category Name</label>
+                  <input v-model="newCategoryName" type="text" placeholder="e.g., Science, History..."
+                    @keyup.enter="addCategory"
+                    class="w-full bg-coral-50 border border-coral-300 rounded-xl px-4 py-3 text-coral-900 focus:outline-none focus:ring-2 focus:ring-coral-200 transition-all" />
+                </div>
+                <div class="flex gap-3">
+                  <button @click="showAddCategoryModal = false"
+                    class="flex-1 px-4 py-3 text-coral-500 font-bold hover:text-coral-800 transition-colors">
+                    Cancel
+                  </button>
+                  <motion.button :whileHover="{ scale: 1.02 }" :whileTap="{ scale: 0.98 }" @click="addCategory"
+                    :disabled="!newCategoryName.trim()"
+                    class="flex-1 bg-coral-300 text-white font-bold px-4 py-3 rounded-xl hover:bg-coral-500 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                    Add Category
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </AnimatePresence>
+
+        <!-- Delete Confirmation Modal -->
+        <AnimatePresence>
+          <motion.div v-if="showDeleteConfirmModal" initial="{ opacity: 0 }" animate="{ opacity: 1 }"
+            exit="{ opacity: 0 }" class="absolute inset-0 z-50 flex items-center justify-center p-4">
+            <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showDeleteConfirmModal = false"></div>
+            <motion.div initial="{ opacity: 0, scale: 0.9, y: 20 }" animate="{ opacity: 1, scale: 1, y: 0 }"
+              exit="{ opacity: 0, scale: 0.9, y: 20 }"
+              class="relative bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md text-center">
+              <div class="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0 1 16.138 21H7.862a2 2 0 0 1-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <h3 class="text-2xl font-serif text-coral-900 font-bold mb-3">Delete Category?</h3>
+              <p class="text-coral-500 text-sm mb-2 leading-relaxed">
+                Are you sure you want to delete <span class="font-bold text-coral-700">"{{ categoryToDelete?.name
+                }}"</span>?
+              </p>
+              <p class="text-coral-400 text-xs mb-8">
+                All flashcards in this category will be moved to "Other".
+              </p>
+              <div class="flex gap-3">
+                <button @click="showDeleteConfirmModal = false" :disabled="isDeletingCategory"
+                  class="flex-1 px-4 py-3 text-coral-500 font-bold rounded-xl hover:bg-coral-50 transition-colors disabled:opacity-50">
+                  Cancel
+                </button>
+                <motion.button :whileHover="{ scale: 1.02 }" :whileTap="{ scale: 0.98 }"
+                  @click="deleteCategory(categoryToDelete?.id ?? 0n); showDeleteConfirmModal = false"
+                  :disabled="isDeletingCategory"
+                  class="flex-1 bg-red-300 text-white font-bold px-4 py-3 rounded-xl hover:bg-red-400 transition-colors disabled:opacity-50">
+                  {{ isDeletingCategory ? 'Deleting...' : 'Delete' }}
+                </motion.button>
+              </div>
+            </motion.div>
+          </motion.div>
         </AnimatePresence>
       </motion.div>
     </div>

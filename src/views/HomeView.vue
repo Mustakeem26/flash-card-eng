@@ -13,11 +13,33 @@ const route = useRoute()
 const authStore = useAuthStore()
 const historyStore = useHistoryStore()
 const themes = ref<any[]>([])
+const categories = ref<{ id: number; category_name: string; created_at?: string }[]>([])
 const isModalOpen = ref(false)
 const loading = ref(true)
 const activeTab = ref(route.query.tab === 'pop' ? 'pop' : 'flash')
 
 const DEFAULT_COLLECTION_ID = 864500091
+
+async function fetchCategories() {
+  const userUid = authStore.user?.id
+  if (!userUid) return
+
+  const { data, error } = await supabase
+    .from('card_category')
+    .select('id, category_name, created_at')
+    .eq('user_uid', userUid)
+    .order('created_at', { ascending: true })
+
+  if (!error && data) {
+    categories.value = data
+  }
+}
+
+function getCategoryName(categoryId: number): string {
+  if (categoryId === 0) return 'Uncategorized'
+  const category = categories.value.find(c => c.id === categoryId)
+  return category?.category_name || 'Uncategorized'
+}
 
 async function getThemes() {
   loading.value = true
@@ -105,27 +127,64 @@ const historyThemes = computed(() => {
   return results
 })
 
-const groupedThemes = computed(() => {
-  const result: Record<string, any[]> = {}
+interface CategoryGroup {
+  categoryId: number
+  themes: any[]
+}
+
+const themesByCategory = computed(() => {
+  const result: Record<number, any[]> = {}
 
   themes.value.forEach(theme => {
-    const themeName = theme.theme_name || ''
-    const parsed = parseThemeName(themeName)
-    theme._baseName = parsed.base
-    theme._orderNum = parsed.num
-
-    const baseName = parsed.base || 'Unnamed'
-    if (!result[baseName]) {
-      result[baseName] = []
+    const categoryId = theme.category_id ?? 0 // 0 for null/undefined
+    if (!result[categoryId]) {
+      result[categoryId] = []
     }
-    // Use non-null assertion or cast to let TS know we just initialized it
-    result[baseName]!.push(theme)
+    result[categoryId]!.push(theme)
   })
 
-  // Sort groups internally
+  // Sort themes within each category by theme_name (alphabetical with numeric)
   for (const key in result) {
-    result[key]?.sort((a, b) => a._orderNum - b._orderNum)
+    result[key]?.sort((a, b) => {
+      const nameA = a.theme_name || ''
+      const nameB = b.theme_name || ''
+      return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' })
+    })
   }
+
+  return result
+})
+
+// Array version of themesByCategory sorted by category created_at
+const themesByCategoryArray = computed(() => {
+  const result: CategoryGroup[] = []
+  const categoryIds = Object.keys(themesByCategory.value).map(Number)
+
+  categoryIds.forEach(categoryId => {
+    const themes = themesByCategory.value[categoryId]
+    if (themes && themes.length > 0) {
+      result.push({ categoryId, themes })
+    }
+  })
+
+  // Sort by category created_at
+  result.sort((a, b) => {
+    // Uncategorized (0) goes last
+    if (a.categoryId === 0) return 1
+    if (b.categoryId === 0) return -1
+
+    const catA = categories.value.find(c => c.id === a.categoryId)
+    const catB = categories.value.find(c => c.id === b.categoryId)
+
+    if (!catA && !catB) return 0
+    if (!catA) return 1
+    if (!catB) return -1
+
+    // Sort by created_at ascending
+    const dateA = catA.created_at ? new Date(catA.created_at).getTime() : 0
+    const dateB = catB.created_at ? new Date(catB.created_at).getTime() : 0
+    return dateA - dateB
+  })
 
   return result
 })
@@ -140,10 +199,10 @@ interface AccordionSection {
 }
 
 const groupedThemesWithPages = computed(() => {
-  const result: Record<string, AccordionSection[]> = {}
+  const result: Record<number, AccordionSection[]> = {}
 
-  for (const key in groupedThemes.value) {
-    const group = groupedThemes.value[key]
+  for (const key in themesByCategory.value) {
+    const group = themesByCategory.value[key]
     if (!group) continue
 
     const pages: AccordionSection[] = []
@@ -176,10 +235,14 @@ const expandedGroups = ref<Record<string, boolean>>({})
 // Initialize expanded state for all accordions
 watch(groupedThemesWithPages, (newGroups) => {
   for (const key of Object.keys(newGroups)) {
-    for (const page of newGroups[key]!) {
-      const accordionKey = `${key}-${page.pageIndex}`
-      if (expandedGroups.value[accordionKey] === undefined) {
-        expandedGroups.value[accordionKey] = false // Default collapsed
+    const numKey = Number(key)
+    const group = newGroups[numKey]
+    if (group) {
+      for (const page of group) {
+        const accordionKey = `${key}-${page.pageIndex}`
+        if (expandedGroups.value[accordionKey] === undefined) {
+          expandedGroups.value[accordionKey] = false // Default collapsed
+        }
       }
     }
   }
@@ -197,6 +260,7 @@ watch(() => authStore.user?.id, (newId, oldId) => {
 
 onMounted(() => {
   getThemes()
+  fetchCategories()
 })
 
 watch(() => route.query.tab, (newTab) => {
@@ -273,11 +337,12 @@ watch(() => route.query.tab, (newTab) => {
           <div class="flex items-center gap-4">
             <h2 class="text-sunny-800 font-serif font-bold text-xl">Archive Registry</h2>
             <Teleport to="#navbar-quick-scroll">
-              <select @change="scrollToGroup" v-if="Object.keys(groupedThemes).length > 0"
+              <select @change="scrollToGroup" v-if="Object.keys(themesByCategory).length > 0"
                 class="bg-white border border-coral-200 text-coral-600 text-sm rounded-lg focus:ring-coral-500 focus:border-coral-500 block p-1.5 px-3 cursor-pointer hover:bg-coral-50 transition-colors outline-none font-sans w-32 sm:w-auto truncate shadow-sm">
                 <option value="" disabled selected>Quick Scroll</option>
-                <option v-for="key in Object.keys(groupedThemes)" :key="key" :value="key">
-                  {{ key }}
+                <option v-for="categoryId in Object.keys(themesByCategory)" :key="categoryId"
+                  :value="Number(categoryId)">
+                  {{ getCategoryName(Number(categoryId)) }}
                 </option>
               </select>
             </Teleport>
@@ -343,40 +408,44 @@ watch(() => route.query.tab, (newTab) => {
           </div>
 
           <!-- Group Columns -->
-          <div v-for="(group, groupName) in groupedThemes" :key="'group-' + groupName"
-            :id="'group-' + String(groupName).replace(/\s+/g, '-').toLowerCase()" class="flex-none w-75 snap-start">
+          <div v-for="groupItem in themesByCategoryArray" :key="'group-' + groupItem.categoryId"
+            :id="'group-' + String(groupItem.categoryId).replace(/\s+/g, '-').toLowerCase()"
+            class="flex-none w-75 snap-start">
             <div class="flex items-center mb-6 gap-3 border-b-2 border-coral-200 pb-3">
               <div class="p-2 bg-coral-50 rounded-lg">
                 <div class="w-5 h-5 bg-coral-200 rounded-full"></div>
               </div>
-              <h3 class="text-sunny-900 font-serif text-xl font-bold truncate">{{ groupName }}</h3>
-              <span class="text-coral-400 font-sans text-xs font-bold ml-auto">{{ group.length }}</span>
+              <h3 class="text-sunny-900 font-serif text-xl font-bold truncate">{{ getCategoryName(groupItem.categoryId)
+              }}
+              </h3>
+              <span class="text-coral-400 font-sans text-xs font-bold ml-auto">{{ groupItem.themes.length }}</span>
             </div>
 
             <!-- Multiple Accordions for groups with > 10 cards -->
-            <template v-if="groupedThemesWithPages[groupName] && group.length > 10">
-              <template v-for="page in groupedThemesWithPages[groupName]" :key="`${groupName}-${page.pageIndex}`">
+            <template v-if="groupedThemesWithPages[groupItem.categoryId] && groupItem.themes.length > 10">
+              <template v-for="page in groupedThemesWithPages[groupItem.categoryId]"
+                :key="`${groupItem.categoryId}-${page.pageIndex}`">
                 <!-- Accordion Header -->
-                <div @click="toggleGroup(`${groupName}-${page.pageIndex}`)"
+                <div @click="toggleGroup(String(groupItem.categoryId) + '-' + String(page.pageIndex))"
                   class="accordion-header mb-2 cursor-pointer bg-white border border-coral-200 rounded-xl px-4 py-5 flex items-center justify-between hover:bg-coral-50 transition-colors">
                   <span class="text-sunny-800 font-bold text-sm pt-1">
-                    {{ groupName }}
+                    {{ getCategoryName(groupItem.categoryId) }}
                     <template v-if="page.cards.length > 1">({{ page.startNum }}-{{ page.endNum }})</template>
                   </span>
                   <div class="flex items-center gap-2">
                     <span class="text-coral-400 text-xs font-bold">{{ page.cards.length }} cards</span>
                     <svg xmlns="http://www.w3.org/2000/svg"
                       class="w-4 h-4 text-coral-400 transition-transform duration-300"
-                      :class="{ 'rotate-180': expandedGroups[`${groupName}-${page.pageIndex}`] }" fill="none"
-                      viewBox="0 0 24 24" stroke="currentColor">
+                      :class="{ 'rotate-180': expandedGroups[String(groupItem.categoryId) + '-' + String(page.pageIndex)] }"
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
                 </div>
 
                 <!-- Accordion Content with Border when open -->
-                <div v-show="expandedGroups[`${groupName}-${page.pageIndex}`] !== false"
-                  :class="['accordion-content-wrapper mb-4 p-3 rounded-xl transition-all duration-300', expandedGroups[`${groupName}-${page.pageIndex}`] ? 'bg-coral-50/30 border border-coral-200' : '']">
+                <div v-show="expandedGroups[String(groupItem.categoryId) + '-' + String(page.pageIndex)] !== false"
+                  :class="['accordion-content-wrapper mb-4 p-3 rounded-xl transition-all duration-300', expandedGroups[String(groupItem.categoryId) + '-' + String(page.pageIndex)] ? 'bg-coral-50/30 border border-coral-200' : '']">
                   <div class="flex flex-col gap-6">
                     <motion.div v-for="(theme, index) in page.cards" :key="theme.id" :initial="{ opacity: 0, y: 20 }"
                       :animate="{ opacity: 1, y: 0 }"
@@ -404,7 +473,7 @@ watch(() => route.query.tab, (newTab) => {
             </template>
             <!-- For groups with < 10 cards, show all cards directly -->
             <div v-else class="flex flex-col gap-6">
-              <motion.div v-for="(theme, index) in group" :key="theme.id" :initial="{ opacity: 0, y: 20 }"
+              <motion.div v-for="(theme, index) in groupItem.themes" :key="theme.id" :initial="{ opacity: 0, y: 20 }"
                 :animate="{ opacity: 1, y: 0 }"
                 :transition="{ delay: index * 0.08, duration: 0.6, ease: [0.16, 1, 0.3, 1] }"
                 @click="goToTheme(theme.id)"
@@ -452,11 +521,11 @@ watch(() => route.query.tab, (newTab) => {
           <div class="flex items-center gap-4">
             <h2 class="text-coral-800 font-serif font-bold text-xl">Archive Registry</h2>
             <Teleport to="#navbar-quick-scroll">
-              <select @change="scrollToGroup" v-if="Object.keys(groupedThemes).length > 0"
+              <select @change="scrollToGroup" v-if="Object.keys(themesByCategory).length > 0"
                 class="bg-white border border-coral-200 text-coral-600 text-sm rounded-lg focus:ring-coral-500 focus:border-coral-500 block p-1.5 px-3 cursor-pointer hover:bg-coral-50 transition-colors outline-none font-sans w-32 sm:w-auto truncate shadow-sm">
                 <option value="" disabled selected>Quick Scroll</option>
-                <option v-for="key in Object.keys(groupedThemes)" :key="key" :value="key">
-                  {{ key }}
+                <option v-for="categoryId in Object.keys(themesByCategory)" :key="categoryId" :value="categoryId">
+                  {{ getCategoryName(Number(categoryId)) }}
                 </option>
               </select>
             </Teleport>
@@ -532,40 +601,43 @@ watch(() => route.query.tab, (newTab) => {
           </div>
 
           <!-- Group Columns (Pop Card) -->
-          <div v-for="(group, groupName) in groupedThemes" :key="'pop-group-' + groupName"
+          <div v-for="groupItem in themesByCategoryArray" :key="'pop-group-' + groupItem.categoryId"
             class="flex-none w-60 snap-start">
             <div class="flex items-center mb-6 gap-3 border-b-2 border-coral-200 pb-2">
               <div class="p-2 bg-coral-50 rounded-lg">
                 <div class="w-5 h-5 bg-coral-200 rounded-full"></div>
               </div>
-              <h3 class="text-coral-900 font-serif text-xl font-bold truncate">{{ groupName }}</h3>
-              <span class="text-coral-400 font-sans text-xs font-bold ml-auto">{{ group.length }}</span>
+              <h3 class="text-coral-900 font-serif text-xl font-bold truncate">{{ getCategoryName(groupItem.categoryId)
+                }}
+              </h3>
+              <span class="text-coral-400 font-sans text-xs font-bold ml-auto">{{ groupItem.themes.length }}</span>
             </div>
 
             <!-- Multiple Accordions for groups with > 10 cards -->
-            <template v-if="groupedThemesWithPages[groupName] && group.length > 10">
-              <template v-for="page in groupedThemesWithPages[groupName]" :key="`pop-${groupName}-${page.pageIndex}`">
+            <template v-if="groupedThemesWithPages[groupItem.categoryId] && groupItem.themes.length > 10">
+              <template v-for="page in groupedThemesWithPages[groupItem.categoryId]"
+                :key="`pop-${groupItem.categoryId}-${page.pageIndex}`">
                 <!-- Accordion Header -->
-                <div @click="toggleGroup(`${groupName}-${page.pageIndex}`)"
+                <div @click="toggleGroup(String(groupItem.categoryId) + '-' + String(page.pageIndex))"
                   class="accordion-header mb-2 cursor-pointer bg-white border border-coral-200 rounded-xl px-4 py-2 flex items-center justify-between hover:bg-coral-50 transition-colors">
                   <span class="text-coral-800 font-bold text-sm">
-                    {{ groupName }}
+                    {{ getCategoryName(groupItem.categoryId) }}
                     <template v-if="page.cards.length > 1">({{ page.startNum }}-{{ page.endNum }})</template>
                   </span>
                   <div class="flex items-center gap-2">
                     <span class="text-coral-400 text-xs font-bold">{{ page.cards.length }} cards</span>
                     <svg xmlns="http://www.w3.org/2000/svg"
                       class="w-4 h-4 text-coral-400 transition-transform duration-300"
-                      :class="{ 'rotate-180': expandedGroups[`${groupName}-${page.pageIndex}`] }" fill="none"
-                      viewBox="0 0 24 24" stroke="currentColor">
+                      :class="{ 'rotate-180': expandedGroups[String(groupItem.categoryId) + '-' + String(page.pageIndex)] }"
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                     </svg>
                   </div>
                 </div>
 
                 <!-- Accordion Content with Border when open -->
-                <div v-show="expandedGroups[`${groupName}-${page.pageIndex}`] !== false"
-                  :class="['accordion-content-wrapper mb-4 p-3 rounded-xl transition-all duration-300', expandedGroups[`${groupName}-${page.pageIndex}`] ? 'bg-coral-50/30 border border-coral-200' : '']">
+                <div v-show="expandedGroups[String(groupItem.categoryId) + '-' + String(page.pageIndex)] !== false"
+                  :class="['accordion-content-wrapper mb-4 p-3 rounded-xl transition-all duration-300', expandedGroups[String(groupItem.categoryId) + '-' + String(page.pageIndex)] ? 'bg-coral-50/30 border border-coral-200' : '']">
                   <div class="flex flex-col gap-3">
                     <motion.div v-for="(theme, index) in page.cards" :key="'pop-card-' + theme.id"
                       :initial="{ opacity: 0, y: 10 }" :animate="{ opacity: 1, y: 0 }"
@@ -601,9 +673,9 @@ watch(() => route.query.tab, (newTab) => {
             </template>
             <!-- For groups with < 10 cards, show all cards directly -->
             <div v-else class="flex flex-col gap-3">
-              <motion.div v-for="(theme, index) in group" :key="'pop-card-' + theme.id" :initial="{ opacity: 0, y: 10 }"
-                :animate="{ opacity: 1, y: 0 }" :transition="{ delay: index * 0.05, duration: 0.4 }"
-                @click="goToPopCard(theme.id)"
+              <motion.div v-for="(theme, index) in groupItem.themes" :key="'pop-card-' + theme.id"
+                :initial="{ opacity: 0, y: 10 }" :animate="{ opacity: 1, y: 0 }"
+                :transition="{ delay: index * 0.05, duration: 0.4 }" @click="goToPopCard(theme.id)"
                 class="group flex items-center justify-between bg-white border border-coral-200 rounded-2xl p-4 hover:shadow-md hover:border-coral-400 transition-all cursor-pointer">
                 <div class="flex items-center gap-2">
                   <div
